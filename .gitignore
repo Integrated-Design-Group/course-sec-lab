@@ -52,3 +52,4 @@ desktop.ini
 playwright-report/
 test-results/
 .eslintcache
+**/.tmp-test-uploads-*

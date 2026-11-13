@@ -4,7 +4,10 @@
  * 关键点：必须在导入 src 之前设置环境变量（config 在模块加载时就完成校验），
  * 因此这里用动态 import，而不是静态 import。
  */
+import fs from 'node:fs';
+import path from 'node:path';
 import { once } from 'node:events';
+import { fileURLToPath } from 'node:url';
 
 process.env.NODE_ENV = 'test';
 process.env.DB_DRIVER = 'memory';
@@ -15,6 +18,14 @@ process.env.BCRYPT_ROUNDS = '10';
 process.env.LOGIN_RATE_LIMIT_MAX_ATTEMPTS = '100';
 process.env.UPLOAD_DIR = `./.tmp-test-uploads-${process.pid}`;
 process.env.CORS_ORIGIN = 'http://localhost:5173';
+
+const backendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const tempUploadDir = path.resolve(backendRoot, process.env.UPLOAD_DIR);
+
+// 无论测试成功还是失败，进程退出时都清掉本进程的临时上传目录
+process.on('exit', () => {
+  fs.rmSync(tempUploadDir, { recursive: true, force: true });
+});
 
 const { createApp } = await import('../../src/app.js');
 
