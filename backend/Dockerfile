@@ -14,8 +14,10 @@ ENV NODE_ENV=production \
 COPY backend/package.json backend/package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
 
-# 再复制源码（.dockerignore 已排除 node_modules / uploads / logs / .env）
+# 再复制源码与数据库脚本
+# db/ 必须放在镜像根目录：backend/scripts 通过 REPO_ROOT（/app 的上一级）定位 db/migrations
 COPY backend/ ./
+COPY db/ /db/
 
 RUN mkdir -p /app/uploads /app/logs && chown -R node:node /app
 
