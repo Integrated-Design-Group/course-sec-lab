@@ -53,3 +53,9 @@ playwright-report/
 test-results/
 .eslintcache
 **/.tmp-test-uploads-*
+
+# 本地验证产物（截图、临时测试脚本与日志）
+artifacts/
+.tmp-*/
+.tmp-*.ps1
+.tmp-*.log
