@@ -1,0 +1,54 @@
+# ---------------------------------------------------------------------------
+# 课程安全靶场 - 忽略规则
+# 原则：真实密钥、运行期数据、构建产物、日志、上传文件一律不入库。
+# ---------------------------------------------------------------------------
+
+# 环境变量与密钥（只允许提交模板）
+.env
+.env.*
+!.env.example
+!**/.env.example
+!.env.sample
+secrets/
+*.secret
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+
+# 依赖
+node_modules/
+**/node_modules/
+.pnpm-store/
+.npm-cache/
+
+# 构建产物
+dist/
+build/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# 运行期数据
+logs/
+*.log
+npm-debug.log*
+backend/uploads/
+uploads/
+tmp/
+temp/
+
+# 操作系统 / 编辑器
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# 测试与工具缓存
+.nyc_output/
+playwright-report/
+test-results/
+.eslintcache

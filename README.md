@@ -1,0 +1,193 @@
+# 课程 Web 安全靶场 · 校园二手教材交易平台
+
+> 状态：**框架阶段（M0）** · 未植入任何漏洞 · 未创建云资源 · 未执行 git push
+> 用途：课程小组自主设计的 Web 管理系统靶场，仅用于**课程授权范围**内的安全测试。
+
+## 这是什么
+
+一个可运行的 Web 管理系统骨架：学生发布/浏览二手教材，管理员维护平台内容。当前完成工程骨架、数据库结构、API 契约、部署架构与最小登录闭环，为后续“业务功能 → 漏洞设计 → 云部署 → 验证报告”打基础。
+
+**不是什么**：
+
+- ❌ 不是完整业务系统（新增/编辑/删除业务条目仍返回 `501`）
+- ❌ 不是漏洞靶场成品（SQL 注入 / XSS / 越权 / 不安全上传均未实现，仅在设计文档中规划）
+- ❌ 不是已部署环境（`docs/04-deploy.md` 只有占位符与步骤）
+
+## 快速开始（3 分钟，无需 MySQL）
+
+```bash
+# 1) 初始化本地环境变量（自动生成随机 JWT_SECRET，默认内存驱动）
+node scripts/init-env.mjs
+
+# 2) 安装依赖
+npm --prefix backend install
+npm --prefix frontend install
+
+# 3) 启动（两个终端）
+npm --prefix backend run dev     # http://127.0.0.1:3000
+npm --prefix frontend run dev    # http://127.0.0.1:5173
+```
+
+打开 <http://127.0.0.1:5173>，用演示账号登录：
+
+| 账号 | 密码 | 角色 |
+| --- | --- | --- |
+| `admin` | `Demo@123456` | 管理员 |
+| `student` | `Demo@123456` | 学生 |
+
+> 演示账号仅限课程环境；部署到公网前必须改密或停用。
+
+验证后端：
+
+```bash
+curl -sS http://127.0.0.1:3000/api/v1/health
+# {"success":true,"code":"OK",...,"data":{"status":"ok","checks":{"database":{"driver":"memory",...}}}}
+```
+
+> Windows PowerShell 若提示“禁止运行脚本”，请把 `npm` 换成 `npm.cmd`（执行策略限制，不是项目问题）。
+
+## 使用 MySQL（正式开发模式）
+
+```bash
+# 1) 准备 MySQL 8.4，并在 .env 中设置：
+#    DB_DRIVER=mysql
+#    DB_HOST=127.0.0.1 / DB_PORT=3306 / DB_NAME=course_sec_lab
+#    DB_USER=lab_user / DB_PASSWORD=<本地密码>
+# 2) 建库 + 种子（会自动创建数据库）
+npm --prefix backend run db:migrate
+npm --prefix backend run db:seed
+# 3) 重新启动后端
+npm --prefix backend run dev
+```
+
+或使用 Docker（需安装 Docker + Compose）：
+
+```bash
+docker compose -f deploy/docker-compose.yml --env-file .env up -d
+```
+
+> Compose 的 `db` 服务**不暴露宿主机端口**，迁移需在 backend 容器内执行，详见 [部署手册](docs/04-deploy.md)。
+
+## 目录结构
+
+```text
+course-sec-lab/
+├── README.md
+├── .env.example            # 环境变量模板（只含占位符）
+├── Makefile                # Linux/macOS/WSL 快捷命令
+├── docs/                   # 12 篇设计与规范文档
+├── backend/                # Node.js + Express
+│   ├── src/{config,routes,controllers,services,repositories,middlewares,models,utils,db}
+│   ├── scripts/            # 迁移 / 种子 / 重置（mysql2）
+│   └── tests/              # node:test 自动化测试
+├── frontend/               # React 18 + Vite 5
+│   ├── src/{api,components,layouts,pages,router,store,utils,styles}
+│   └── public/
+├── db/
+│   ├── migrations/         # 001_init_schema.sql
+│   ├── seeds/              # 001_seed_base.sql
+│   └── reset.sql
+├── deploy/
+│   ├── docker-compose.yml  # web + backend + db
+│   ├── nginx/default.conf
+│   └── scripts/            # deploy / rollback / wait-for-db
+├── scripts/                # init-env / check-env / check-framework / dev-up / seed
+└── tests/                  # 跨栈冒烟 + API 契约测试
+```
+
+## 常用命令
+
+| 命令 | 作用 |
+| --- | --- |
+| `node scripts/init-env.mjs` | 生成 `.env`（随机 JWT_SECRET） |
+| `node scripts/check-env.mjs [--db]` | 环境自检（含 MySQL 端口探测） |
+| `bash scripts/dev-up.sh` | 一键启动本地开发环境 |
+| `npm --prefix backend run dev` | 后端（3000，`--watch`） |
+| `npm --prefix frontend run dev` | 前端（5173） |
+| `npm --prefix backend test` | 后端测试（23 项） |
+| `npm run smoke` | 冒烟测试（需后端已启动） |
+| `npm run contract` | API 契约测试（需后端已启动） |
+| `npm --prefix frontend run build` | 前端生产构建 |
+| `npm --prefix backend run db:migrate` | 数据库迁移 |
+| `npm --prefix backend run db:seed` | 种子数据 |
+| `bash scripts/seed.sh` | 重置 + 迁移 + 种子（演示前标准动作） |
+| `npm run check` | 框架自检（目录/JSON/YAML/密钥/文档） |
+| `make help` | Make 快捷命令 |
+
+## API 一览
+
+前缀固定 `/api/v1`，统一响应信封与错误码见 [API 契约](docs/03-api.md)。
+
+| 方法 | 路径 | 状态 |
+| --- | --- | --- |
+| GET | `/api/v1/health` | ✅ |
+| POST | `/api/v1/auth/login` | ✅ |
+| POST | `/api/v1/auth/logout` | ✅ |
+| GET | `/api/v1/auth/me` | ✅ |
+| GET | `/api/v1/business-items` | ✅ 只读 + 分页/过滤 |
+| GET | `/api/v1/business-items/:id` | ✅ 只读 |
+| POST/PATCH/DELETE | `/api/v1/business-items…` | 🚧 501 占位 |
+| POST | `/api/v1/uploads` | ✅ 安全上传基线 |
+
+## 文档
+
+| 文档 | 内容 |
+| --- | --- |
+| [00 总览](docs/00-overview.md) | 业务场景、角色、边界 |
+| [01 架构](docs/01-architecture.md) | 拓扑、分层、端口 |
+| [02 数据库](docs/02-database.md) | ER 图、表结构、索引、种子 |
+| [03 API](docs/03-api.md) | 完整契约与示例 |
+| [04 部署](docs/04-deploy.md) | 步骤（占位符）、备份、回滚 |
+| [05 环境](docs/05-environment.md) | 版本锁定、命令、日志、变量 |
+| [06 规范](docs/06-conventions.md) | 分支、提交、PR、代码规范 |
+| [07 隔离授权](docs/07-security-isolation.md) | 独立隔离、授权边界、下线 |
+| [08 漏洞设计](docs/08-vuln-design.md) | VULN-01～05（未实现） |
+| [09 验证模板](docs/09-verify-template.md) | 验证流程与记录模板 |
+| [10 访问登记](docs/10-access.md) | 访问信息与账号发放（占位） |
+| [框架验收](docs/framework-acceptance.md) | 人工验收清单 |
+
+## 新成员接入
+
+1. 阅读 [00 总览](docs/00-overview.md) 与 [06 规范](docs/06-conventions.md)。
+2. 按“快速开始”跑通健康检查与登录（截图留存，作为接入证明）。
+3. 认领 Issue，从 `main` 拉 `feat/<issue>-<slug>` 分支。
+4. 提交前执行：后端测试 + 前端构建 + `npm run check`。
+5. 提 PR（描述含验证方式），至少 1 人 Review 后 Squash 合并。
+
+## 后续 Issue 拆分建议
+
+| 优先级 | Issue | 内容 | 预估 |
+| --- | --- | --- | --- |
+| P0 | M1-01 | 业务条目新增接口 + 入参校验 + 审计 | 1 天 |
+| P0 | M1-02 | 业务条目编辑/删除 + 归属校验（admin 放行） | 1 天 |
+| P0 | M1-03 | 前端新建/编辑表单与错误提示 | 1 天 |
+| P0 | M1-04 | 写接口的权限/校验/审计测试 | 0.5 天 |
+| P1 | M1-05 | 上传文件受控读取/缩略图（鉴权，不公开目录） | 1 天 |
+| P1 | M1-06 | 管理员用户管理 + 审计日志检索页 | 1.5 天 |
+| P1 | M1-07 | 数据库迁移 002（如需新表/字段）+ 文档同步 | 0.5 天 |
+| P1 | M2-01 | VULN-01～05 设计评审（不写代码） | 0.5 天 |
+| P1 | M2-02 | 每个 VULN 独立分支 + 开关 + 验证用例 | 每个 0.5～1 天 |
+| P1 | M3-01 | 独立云主机部署 + HTTPS + 访问登记 | 1 天 |
+| P2 | M4-01 | 验证报告整理与漏洞清单归档 | 1 天 |
+| P2 | M0-01 | 依赖升级与 CI（测试 + 构建 + 自检） | 0.5 天 |
+
+## 安全与合规
+
+- 本仓库不含真实密码、云密钥、证书私钥；`.env` 已被忽略。
+- 演示账号与假数据仅用于课程环境。
+- 漏洞实现必须独立分支/独立实例/显式开关，且仅限课程授权测试，详见 [08](docs/08-vuln-design.md) 与 [07](docs/07-security-isolation.md)。
+- 禁止对非本项目目标进行任何扫描或攻击。
+
+## 当前验证状态
+
+| 项 | 结果 |
+| --- | --- |
+| 后端自动化测试（内存驱动） | ✅ 23 项通过 |
+| 前端生产构建 | ✅ 通过（55 模块） |
+| 框架静态自检 `npm run check` | ✅ 通过（见脚本输出） |
+| 冒烟 / 契约测试（内存驱动） | ✅ 通过 |
+| MySQL 迁移 + 种子 | ⚠️ 本机无 MySQL，未执行（SQL 已审查） |
+| Docker Compose 编排 | ⚠️ 本机无 Docker，未执行 |
+| 公网部署 | ⚠️ 未部署（按课程要求） |
+
+> 详细记录与未验证原因见 [框架验收清单](docs/framework-acceptance.md) 附录。

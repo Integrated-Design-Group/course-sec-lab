@@ -1,0 +1,28 @@
+{
+  "name": "course-sec-lab-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "课程安全靶场后端（框架阶段）",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "test": "node --test tests/",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:seed": "node scripts/seed.mjs",
+    "db:reset": "node scripts/reset.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "2.4.3",
+    "cors": "2.8.5",
+    "dotenv": "16.4.7",
+    "express": "4.21.2",
+    "helmet": "8.0.0",
+    "jsonwebtoken": "9.0.2",
+    "multer": "2.0.2",
+    "mysql2": "3.11.5"
+  }
+}

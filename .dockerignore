@@ -1,0 +1,19 @@
+# Docker 构建上下文忽略规则（上下文为仓库根目录）
+# 目的：减小镜像体积，避免把密钥、依赖、产物、运行期数据打进镜像。
+.git
+.gitignore
+**/node_modules
+**/dist
+**/coverage
+**/logs
+**/uploads
+**/.npm-cache
+**/.tmp-test-uploads-*
+.env
+.env.*
+!.env.example
+docs
+tests
+scripts
+deploy/scripts
+*.md

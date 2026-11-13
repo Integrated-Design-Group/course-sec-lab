@@ -1,0 +1,26 @@
+{
+  "name": "course-sec-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "课程 Web 安全靶场框架阶段：校园二手教材交易平台（仅框架、模板与占位）",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "init:env": "node scripts/init-env.mjs",
+    "check": "node scripts/check-framework.mjs",
+    "check:env": "node scripts/check-env.mjs",
+    "test": "npm --prefix backend test",
+    "smoke": "node --test tests/smoke/",
+    "contract": "node --test tests/api/",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "db:migrate": "npm --prefix backend run db:migrate",
+    "db:seed": "npm --prefix backend run db:seed",
+    "db:reset": "npm --prefix backend run db:reset"
+  },
+  "devDependencies": {
+    "js-yaml": "4.1.0"
+  }
+}
