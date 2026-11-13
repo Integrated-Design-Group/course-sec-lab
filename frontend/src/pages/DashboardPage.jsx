@@ -133,10 +133,12 @@ export function DashboardPage() {
           <h3>教材条目列表 →</h3>
           <p className="muted">验证分页、过滤与统一响应结构。</p>
         </Link>
-        <Link className="card card-link" to="/admin">
-          <h3>管理后台占位 →</h3>
-          <p className="muted">仅 admin 角色可见，用于验证角色守卫。</p>
-        </Link>
+        {user?.role === 'admin' && (
+          <Link className="card card-link" to="/admin">
+            <h3>管理后台占位 →</h3>
+            <p className="muted">仅 admin 角色可见，用于验证角色守卫。</p>
+          </Link>
+        )}
       </div>
     </>
   );
