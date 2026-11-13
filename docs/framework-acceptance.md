@@ -73,32 +73,43 @@
 
 ## 6. 附录 A：搭建阶段已执行的自动检查（参考，不替代人工验收）
 
-> 以下为框架搭建时在本机（Windows 11 / Node v24.18.0 / npm 11.16.0）实际执行的检查，仅供复核。**验收人仍需独立执行第 4 节各项。**
+> 以下为框架搭建与补充验证时在本机（Windows 11 / Node v24.18.0 / npm 11.16.0 / Docker Desktop 29.9.3）实际执行的检查，仅供复核。**验收人仍需独立执行第 4 节各项。**
 
 | # | 检查 | 命令 | 结果 |
 | --- | --- | --- | --- |
-| A-1 | 后端 JS 语法 | `node --check`（遍历 `backend/src`、`scripts`、`tests`） | ✅ 48 个文件全部通过 |
-| A-2 | 后端自动化测试 | `node tests/health.test.mjs` 等 4 个文件 | ✅ 23 项断言全部通过 |
-| A-3 | 前端生产构建 | `npm --prefix frontend run build` | ✅ 55 个模块，产物 186.99 kB JS + 9.70 kB CSS |
+| A-1 | 后端 JS 语法 | `node --check`（src / scripts / tests） | ✅ 58 个文件全部通过 |
+| A-2 | 后端自动化测试 | 4 个 `node:test` 测试文件 | ✅ 23 项全部通过（内存驱动） |
+| A-3 | 前端生产构建 | `npm --prefix frontend run build` | ✅ 55 模块；容器内构建同样通过 |
 | A-4 | 前端打包（辅助） | `esbuild src/main.jsx --bundle` | ✅ 1.41 MB bundle，无解析错误 |
-| A-5 | 环境自检 | `node scripts/check-env.mjs` | ✅ 通过 7 / 警告 1（memory 驱动）/ 失败 0 |
-| A-6 | 健康检查 | `curl /api/v1/health` | ✅ 200，`status=ok`，`requestId` 存在 |
-| A-7 | 冒烟测试 | `node tests/smoke/smoke.test.mjs` | ✅ 5 项通过 |
-| A-8 | API 契约测试 | `node tests/api/contract.test.mjs` | ✅ 6 项通过 |
+| A-5 | 环境自检 | `node scripts/check-env.mjs` | ✅ 7 通过 / 1 警告（memory 驱动）/ 0 失败 |
+| A-6 | 健康检查（内存驱动） | `GET /api/v1/health` | ✅ 200，`status=ok`，含 `requestId` |
+| A-7 | 冒烟测试 | `npm run smoke`（内存 + Docker MySQL） | ✅ 5 项，两种环境均通过 |
+| A-8 | API 契约测试 | `npm run contract`（内存 + Docker MySQL） | ✅ 6 项，两种环境均通过 |
 | A-9 | 框架静态自检 | `npm run check` | ✅ 26 项通过，0 警告，0 失败 |
-| A-10 | Compose YAML 语法 | `js-yaml` 解析 | ✅ 语法合法；db 无端口、internal 网络正确 |
+| A-10 | Compose 语法与拓扑 | `js-yaml` + `docker compose config` | ✅ 合法；db 无宿主机端口、internal 网络正确 |
+| A-11 | MySQL 迁移（容器内） | `compose run --rm backend node scripts/migrate.mjs` | ✅ 创建 6 张表，应用 `001_init_schema` |
+| A-12 | 种子与重置（容器内） | `seed` → `reset --force` → `migrate` → `seed` | ✅ `roles=2 users=2 items=3`；重置后可重新登录 |
+| A-13 | Compose 全栈构建与启动 | `compose build` + `up -d` | ✅ backend/web 镜像构建成功；3 容器 healthy |
+| A-14 | Nginx 反代与 SPA 回退 | `GET /api/v1/health`、`GET /business` | ✅ 均为 200；`/business` 返回 SPA 入口 |
+| A-15 | 登录闭环（真实 MySQL） | 登录 → `/auth/me` → 列表 → 退出 → 再访问 | ✅ 退出后同一令牌返回 401 |
+| A-16 | 浏览器端到端 | Playwright + 本机 Edge 157 无头 | ✅ 11 项：守卫/登录/列表/详情/退出/角色/404/控制台无错 |
+| A-17 | Shell 脚本语法 | `bash -n`（`bash:5` 容器，6 个 `.sh`） | ✅ 全部通过 |
+| A-18 | 宿主机开发模式 | dev compose + `db:migrate` / `db:seed` | ✅ `127.0.0.1:3306` 连通，迁移/种子通过 |
+| A-19 | 镜像内迁移脚本可执行 | 修复 Dockerfile（`COPY db/ /db/`）后重跑 | ✅ 修复前 `ENOENT /db/migrations`，修复后通过 |
 
-## 7. 附录 B：未验证项与原因（必须如实保留）
+## 7. 附录 B：仍未验证项与原因（必须如实保留）
+
+> 截至 2026-11-13，原先未验证的 MySQL、Compose、浏览器 E2E、Shell 语法、宿主机开发模式已补齐（见附录 A）。剩余项如下。
 
 | 项 | 状态 | 原因 | 后续动作 |
 | --- | --- | --- | --- |
-| MySQL 迁移 + 种子实际执行 | ❌ 未验证 | 本机未安装 MySQL，也无 Docker | 在具备 MySQL 8.4 的环境执行 `db:migrate` / `db:seed`，补 F-04/F-05 记录 |
-| Docker Compose 构建与启动 | ❌ 未验证 | 本机未安装 Docker | 在部署机执行 `compose build` + `up -d`，验证 F-21 |
-| 浏览器端到端渲染/交互 | ❌ 未验证 | 无浏览器自动化环境；构建与打包只证明可编译 | 按 F-07/F-09/F-18 人工走查并截图 |
-| `scripts/*.sh`、`deploy/scripts/*.sh` 运行 | ❌ 未验证 | Windows 环境未启用 WSL/Unix shell；尝试 `bash -n` 返回 `E_ACCESSDENIED` | 在 Linux/macOS 或 WSL 执行 `bash -n` 与实跑，补记录 |
-| 公网部署 / 域名 / HTTPS | ❌ 未执行 | 课程要求不创建真实资源，且框架阶段不部署 | M3 阶段按 [04-deploy.md](./04-deploy.md) 执行并登记 |
+| 公网部署 / 域名 / HTTPS | ❌ 未执行 | 课程要求不创建真实云资源，框架阶段不部署 | M3 阶段按 [04-deploy.md](./04-deploy.md) 执行并登记 |
 | 漏洞可利用性验证 | ❌ 不适用 | 框架阶段明确不实现漏洞 | M2 阶段按 [08](./08-vuln-design.md) / [09](./09-verify-template.md) 执行 |
-| 性能/并发 | ❌ 未验证 | 框架阶段不做性能指标 | 后续按需补充 |
+| 性能 / 并发 | ❌ 未验证 | 框架阶段不做性能指标 | 后续按需补充 |
+| 多副本 / 共享会话 | ❌ 未验证 | 令牌撤销表与登录限流为进程内实现 | 引入 Redis 或共享存储后验证 |
+| 浏览器兼容性 | ⚠️ 部分 | 仅验证 Edge 157 无头模式 | 补充 Chrome / Firefox / Safari 手测 |
+| GitHub 远端协作流程 | ❌ 未执行 | 代码仅在本地提交，未 push | 首次 push 后验证 PR 模板、保护分支、评审流程 |
+| 云上证书与 HSTS | ❌ 未执行 | 依赖公网部署 | 与 HTTPS 一并验证 |
 
 ## 8. 附录 C：不通过处理
 
@@ -118,8 +129,44 @@ $ npm run check
 框架自检完成：通过 26 · 警告 0 · 失败 0
 结论：框架静态检查通过。
 
-（执行时间：2026-11-13T12:3xZ，环境：Windows 11 / Node v24.18.0 / npm 11.16.0）
+（执行时间：2026-11-13，环境：Windows 11 / Node v24.18.0 / npm 11.16.0）
 关键通过项：目录与文件完整、Compose YAML 合法、db 无宿主机端口、
 internal 网络 internal:true、密钥扫描 122 个文本文件、迁移包含 5 张必需表、
 验收表格 24 项字段齐全、后端源码无 eval/child_process。
+```
+
+### 补充验证记录（Docker / MySQL / 浏览器，2026-11-13）
+
+```text
+环境：Docker 29.9.3 + Compose v5.7.0 + mysql:8.4.4 + Edge 157
+
+1) 容器内数据库
+   迁移：✔ 已应用 001_init_schema（6 张表）
+   种子：roles=2 users=2 business_items=3
+   重置：reset --force → migrate → seed 通过；admin 可重新登录
+
+2) Compose 全栈
+   build：backend、web 镜像构建成功
+   up -d：csl-db / csl-backend / csl-web 均为 healthy 或被依赖判定健康
+   db 端口：未映射宿主机（生产编排符合预期）
+
+3) Nginx 与登录闭环
+   GET /api/v1/health：200，database=mysql/up
+   GET /business：200，返回 SPA 入口
+   登录 → /auth/me → 列表（pageSize=2，total=3）→ 退出 → 旧令牌 401
+
+4) 宿主机开发模式
+   dev compose：127.0.0.1:3306 连通；db:seed 成功；users=2
+
+5) 浏览器 E2E（Playwright + Edge headless）
+   11 项通过：路由守卫、登录回跳、概览、列表、详情、退出、退出后守卫、
+   学生隐藏管理入口、403 提示、404 页、控制台无错误
+
+6) Shell 语法
+   bash:5 容器内 bash -n：scripts/*.sh 与 deploy/scripts/*.sh 共 6 个全部通过
+
+7) 本次修复
+   - backend 镜像补齐 db/ 目录（修复容器内迁移 ENOENT）
+   - dev compose 让 db 额外接入 app_net（修复 internal 网络无 NAT 导致端口映射失效）
+   - 学生概览页不再显示管理员入口卡片
 ```

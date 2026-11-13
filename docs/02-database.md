@@ -208,6 +208,8 @@ erDiagram
 
 ## 7. 迁移与重置
 
+> **验证记录（2026-11-13）**：在 MySQL 8.4.4 容器中实测：迁移创建 6 张表；种子写入 `roles=2 users=2 business_items=3`；`reset → migrate → seed` 可重复执行并重新登录；宿主机开发模式（`127.0.0.1:3306`）的迁移与种子同样通过。详见 [framework-acceptance.md](./framework-acceptance.md) 附录 A。
+
 ### 7.1 首次建库（空库 → 可运行）
 
 ```bash

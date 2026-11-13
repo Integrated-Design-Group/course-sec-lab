@@ -36,19 +36,23 @@
 
 > 依赖版本以 `backend/package.json`、`frontend/package.json` 与对应 `package-lock.json` 为准；升级必须走 PR 并说明原因。
 
-### 1.3 本机验证环境（框架搭建阶段）
+### 1.3 本机验证环境（2026-11-13 实测）
 
 | 项 | 实际值 |
 | --- | --- |
 | 操作系统 | Windows 11（PowerShell 5.1） |
 | Node.js | v24.18.0（满足 `>= 22`） |
 | npm | 11.16.0 |
-| Docker | **未安装** → Compose 编排**未在本机验证** |
-| MySQL | **未安装** → 真实数据库迁移/种子**未在本机验证**（SQL 经人工审查 + 自检脚本结构检查） |
-| 前端构建 | ✅ `vite build` 通过（55 个模块） |
-| 后端测试 | ✅ 23 项 `node:test` 全通过（内存驱动） |
+| Docker | ✅ 29.9.3（Docker Desktop，Linux 容器；用户级安装，CLI 需显式加入 PATH） |
+| Docker Compose | ✅ v5.7.0 |
+| MySQL | ✅ 8.4.4（官方容器；宿主机开发模式经 `127.0.0.1:3306` 连通） |
+| 前端构建 | ✅ `vite build`（55 个模块；镜像内构建同样通过） |
+| 后端测试 | ✅ 23 项 `node:test`（内存驱动） |
+| MySQL 迁移 / 种子 / 重置 | ✅ 容器内与宿主机开发模式均通过 |
+| Compose 全栈 | ✅ 构建 / 启动 / 健康检查 / 登录 / Nginx 反代通过 |
+| 浏览器端到端 | ✅ Edge 157 无头模式 11 项通过 |
 
-> 上表只记录事实。任何“未验证”的项目都不得在验收中写成“通过”。
+> 上表只记录事实。未验证项（公网部署、HTTPS、漏洞验证、性能）仍不得写成“通过”。
 
 ## 2. 端口分配
 
@@ -198,6 +202,7 @@ npm --prefix backend run dev
 | 现象 | 处理 |
 | --- | --- |
 | 启动报 `[config] JWT_SECRET …` | 运行 `node scripts/init-env.mjs --force` 或手动填随机值 |
+| `docker` 命令找不到（Windows 用户级安装） | 使用 `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin\docker.exe`，或把该目录加入 PATH 后重开终端 |
 | 端口 3000 被占用 | 改 `.env` 的 `PORT`，同步改 `frontend/vite.config.js` 代理目标 |
 | 前端 5173 请求 404 | 确认后端已启动且代理目标端口一致 |
 | `npm install` 权限错误 | 指定可写缓存目录：`npm install --cache ./.npm-cache` |

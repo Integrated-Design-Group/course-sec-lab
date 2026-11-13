@@ -7,6 +7,7 @@
 
 > 本文只讲**本地**。云服务器、域名、HTTPS、安全组属于部署阶段，见 [04 部署](./04-deploy.md)，由后续成员完成后评审。
 > **本文不会出现任何真实密码、云密钥或公网地址**；示例密码均为占位或课程演示值。
+> **实测说明（2026-11-13）**：路线 A/B/C 的核心命令已在 Windows 11 + Docker Desktop 29.9.3 + Compose v5.7.0 + MySQL 8.4.4 上执行通过，包括容器内迁移/种子/重置、宿主机 `127.0.0.1:3306` 开发模式、Nginx 访问与浏览器登录。若你的环境不同，仍按本文逐步验证。
 
 ## 1. 先选一条路线
 
@@ -317,6 +318,8 @@ docker logs csl-db --tail 30
 预期：`STATUS` 显示 `Up (healthy)`；日志出现 `ready for connections`。
 
 > 首次启动需要 10～40 秒初始化，`healthy` 之前不要执行迁移。
+>
+> 开发覆盖文件会让 db **同时接入 `app_net`**：基础编排中 db 只在 `internal`（无外网出口）网络，该网络没有可用 NAT，宿主机端口映射不会生效。如果你用的是旧版覆盖文件（只有 `ports`），请更新到当前版本。
 
 ### 7.4 验证端口映射
 
@@ -538,6 +541,23 @@ npm --prefix backend run db:seed
 内存模式则直接重启后端（`Ctrl + C` 后重新 `npm --prefix backend run dev`）。
 
 ## 12. 常见错误与解决
+
+### 12.0 `docker` 命令找不到（PATH）
+
+- 现象：`docker : 无法将“docker”项识别为 cmdlet、函数、脚本文件或可运行程序的名称`，但 Docker Desktop 已在运行。
+- 原因：Docker Desktop 采用**用户级安装**时，CLI 目录可能没有加入 PATH（本次实测环境即如此）。
+- 解决：
+
+```powershell
+# 先确认安装位置（用户级安装常见路径）
+Test-Path "$env:LOCALAPPDATA\Programs\DockerDesktop\resources\bin\docker.exe"
+
+# 临时加入当前会话 PATH
+$env:PATH = "$env:LOCALAPPDATA\Programs\DockerDesktop\resources\bin;$env:PATH"
+docker --version
+```
+
+> 需要长期生效时，在“系统属性 → 环境变量 → Path”中追加该目录，然后重开终端。
 
 ### 12.1 Docker 未启动
 
