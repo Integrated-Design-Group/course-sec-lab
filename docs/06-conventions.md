@@ -24,13 +24,13 @@ git switch -c fix/18-login-rate-limit
 
 ## 2. 提交规范
 
-采用 Conventional Commits，**标题使用中文描述**，类型保留英文：
+采用 Conventional Commits：**标题使用英文**（动词开头、小写、不加句号），类型保留英文；正文可用中文说明动机与影响。完整命令与示例见 [11-github-collaboration.md](./11-github-collaboration.md) 第 7 节。
 
 ```text
-<type>(<scope>): <中文摘要>
+<type>(<scope>): <english subject>
 
-<可选：正文，说明动机与影响>
-<可选：BREAKING CHANGE: ...>
+<可选正文：为什么改、影响范围>
+<可选：Refs #12 / Closes #12>
 ```
 
 | type | 含义 |
@@ -47,11 +47,13 @@ git switch -c fix/18-login-rate-limit
 示例：
 
 ```text
-feat(auth): 增加登录失败限流
-fix(api): 修正分页 hasNext 计算
-docs(db): 补充 business_items 索引说明
-chore(deps): 锁定 vite 5.4.11
+feat(auth): add login rate limit
+fix(api): correct pagination hasNext
+docs(db): document business_items indexes
+chore(deps): pin vite to 5.4.11
 ```
+
+> 仓库早期提交使用了中文标题，属历史记录，不强制改写；新提交按本节执行。
 
 要求：
 

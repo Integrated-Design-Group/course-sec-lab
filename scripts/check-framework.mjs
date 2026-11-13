@@ -42,10 +42,14 @@ function exists(relativePath) {
 /* ------------------------------------------------------------------ */
 const REQUIRED_FILES = [
   'README.md',
+  'TODO.md',
+  'CONTRIBUTING.md',
   '.gitignore',
   '.env.example',
   'Makefile',
   'package.json',
+  '.github/pull_request_template.md',
+  '.github/ISSUE_TEMPLATE/task.md',
   'docs/00-overview.md',
   'docs/01-architecture.md',
   'docs/02-database.md',
@@ -57,6 +61,8 @@ const REQUIRED_FILES = [
   'docs/08-vuln-design.md',
   'docs/09-verify-template.md',
   'docs/10-access.md',
+  'docs/11-github-collaboration.md',
+  'docs/12-local-setup.md',
   'docs/framework-acceptance.md',
   'backend/package.json',
   'backend/package-lock.json',
@@ -79,6 +85,7 @@ const REQUIRED_FILES = [
   'db/seeds/001_seed_base.sql',
   'db/reset.sql',
   'deploy/docker-compose.yml',
+  'deploy/docker-compose.dev.yml',
   'deploy/nginx/default.conf',
   'deploy/scripts/deploy.sh',
   'deploy/scripts/rollback.sh',
@@ -388,6 +395,8 @@ const DOC_FILES = [
   'docs/08-vuln-design.md',
   'docs/09-verify-template.md',
   'docs/10-access.md',
+  'docs/11-github-collaboration.md',
+  'docs/12-local-setup.md',
 ];
 
 const headerProblems = [];

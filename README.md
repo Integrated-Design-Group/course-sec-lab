@@ -67,15 +67,29 @@ docker compose -f deploy/docker-compose.yml --env-file .env up -d
 ```
 
 > Compose 的 `db` 服务**不暴露宿主机端口**，迁移需在 backend 容器内执行，详见 [部署手册](docs/04-deploy.md)。
+> 只想用 Docker 起数据库、前后端仍在本机跑：使用 `deploy/docker-compose.dev.yml` 覆盖文件，完整步骤见 [本地部署](docs/12-local-setup.md)。
+
+## 团队协作入口
+
+| 入口 | 用途 |
+| --- | --- |
+| [TODO.md](TODO.md) | 课程任务清单、负责人、依赖、完成证据与勾选规则 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献规则速查（提 PR 前必读） |
+| [GitHub 协作规范](docs/11-github-collaboration.md) | 术语、分支、push/pull、PR、评审、冲突解决 |
+| [本地部署](docs/12-local-setup.md) | 从安装软件到登录成功的每一步与常见错误 |
+| [PR 模板](.github/pull_request_template.md) / [Issue 模板](.github/ISSUE_TEMPLATE/task.md) | 提交时自动带出 |
 
 ## 目录结构
 
 ```text
 course-sec-lab/
 ├── README.md
+├── TODO.md                 # 课程任务清单与完成标记
+├── CONTRIBUTING.md         # 贡献规则速查
 ├── .env.example            # 环境变量模板（只含占位符）
 ├── Makefile                # Linux/macOS/WSL 快捷命令
-├── docs/                   # 12 篇设计与规范文档
+├── .github/                # PR / Issue 模板
+├── docs/                   # 14 篇设计与规范文档
 ├── backend/                # Node.js + Express
 │   ├── src/{config,routes,controllers,services,repositories,middlewares,models,utils,db}
 │   ├── scripts/            # 迁移 / 种子 / 重置（mysql2）
@@ -89,6 +103,7 @@ course-sec-lab/
 │   └── reset.sql
 ├── deploy/
 │   ├── docker-compose.yml  # web + backend + db
+│   ├── docker-compose.dev.yml # 仅本地：把 MySQL 映射到 127.0.0.1
 │   ├── nginx/default.conf
 │   └── scripts/            # deploy / rollback / wait-for-db
 ├── scripts/                # init-env / check-env / check-framework / dev-up / seed
@@ -111,6 +126,7 @@ course-sec-lab/
 | `npm --prefix backend run db:migrate` | 数据库迁移 |
 | `npm --prefix backend run db:seed` | 种子数据 |
 | `bash scripts/seed.sh` | 重置 + 迁移 + 种子（演示前标准动作） |
+| `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml --env-file .env up -d db` | 仅启动本地 MySQL（绑定 127.0.0.1） |
 | `npm run check` | 框架自检（目录/JSON/YAML/密钥/文档） |
 | `make help` | Make 快捷命令 |
 
@@ -144,17 +160,21 @@ course-sec-lab/
 | [08 漏洞设计](docs/08-vuln-design.md) | VULN-01～05（未实现） |
 | [09 验证模板](docs/09-verify-template.md) | 验证流程与记录模板 |
 | [10 访问登记](docs/10-access.md) | 访问信息与账号发放（占位） |
+| [11 GitHub 协作](docs/11-github-collaboration.md) | 术语、分支、push/pull、PR、评审、冲突解决 |
+| [12 本地部署](docs/12-local-setup.md) | 从安装软件到登录验证的完整步骤 |
 | [框架验收](docs/framework-acceptance.md) | 人工验收清单 |
 
 ## 新成员接入
 
-1. 阅读 [00 总览](docs/00-overview.md) 与 [06 规范](docs/06-conventions.md)。
-2. 按“快速开始”跑通健康检查与登录（截图留存，作为接入证明）。
-3. 认领 Issue，从 `main` 拉 `feat/<issue>-<slug>` 分支。
+1. 阅读 [00 总览](docs/00-overview.md)、[06 规范](docs/06-conventions.md)、[11 GitHub 协作](docs/11-github-collaboration.md)。
+2. 按 [12 本地部署](docs/12-local-setup.md) 跑通健康检查与登录（截图留存，作为接入证明）。
+3. 在 [TODO.md](TODO.md) 认领任务并建 Issue，从最新 `main` 拉 `feat/<issue>-<slug>` 分支。
 4. 提交前执行：后端测试 + 前端构建 + `npm run check`。
-5. 提 PR（描述含验证方式），至少 1 人 Review 后 Squash 合并。
+5. 按 [PR 模板](.github/pull_request_template.md) 提 PR，至少 1 人 Review 后 Squash 合并；完成任务时在同一 PR 勾选 TODO 并填写证据。
 
 ## 后续 Issue 拆分建议
+
+> 正式任务、负责人与完成标记以 [TODO.md](TODO.md) 为准；下表只作为排期参考。
 
 | 优先级 | Issue | 内容 | 预估 |
 | --- | --- | --- | --- |
