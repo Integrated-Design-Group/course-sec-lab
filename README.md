@@ -214,3 +214,5 @@ course-sec-lab/
 | 公网部署 / 域名 / HTTPS | ⚠️ 未执行（按课程要求未创建云资源） |
 
 > 详细命令、关键输出与仍未验证项见 [框架验收清单](docs/framework-acceptance.md) 附录 A/B/D。
+
+Ciallo～(∠・ω< )⌒☆
