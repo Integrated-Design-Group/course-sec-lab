@@ -1,18 +1,29 @@
 /**
- * 业务条目控制器
- * ---------------------------------------------------------------------------
- * 读接口可用（列表/详情）；写接口在框架阶段统一返回 501，
- * 由后续 Issue 实现并以“登录 + 归属校验 + 角色校验”为前提。
+ * 业务条目控制器（M1）
+ * 读接口对所有访问者开放（mine=true 需要登录）；
+ * 写接口要求登录，权限与状态规则在 services 层。
  */
 import { asyncHandler } from '../utils/async-handler.js';
 import { sendSuccess } from '../utils/response.js';
-import { getBusinessItemById, listBusinessItems } from '../services/business.service.js';
+import {
+  createBusinessItem,
+  deleteBusinessItem,
+  getBusinessItemById,
+  listBusinessItems,
+  updateBusinessItem,
+} from '../services/business.service.js';
 import { parsePositiveIntParam } from '../utils/ids.js';
-import { notImplemented } from '../utils/errors.js';
 
 export const getItems = asyncHandler(async (req, res) => {
-  const { page, pageSize, status, keyword } = req.validated.query;
-  const { items, pagination } = await listBusinessItems({ page, pageSize, status, keyword });
+  const { page, pageSize, status, keyword, mine } = req.validated.query;
+  const { items, pagination } = await listBusinessItems({
+    page,
+    pageSize,
+    status,
+    keyword,
+    mine: mine === true,
+    actor: req.user ?? null,
+  });
 
   return sendSuccess(res, {
     message: 'OK',
@@ -27,16 +38,38 @@ export const getItemDetail = asyncHandler(async (req, res) => {
   return sendSuccess(res, { message: 'OK', data: { item } });
 });
 
-/* ---------- 以下为框架阶段占位：契约已定，实现留给后续 Issue ---------- */
+export const createItem = asyncHandler(async (req, res) => {
+  const item = await createBusinessItem({
+    input: req.validated.body,
+    actor: req.user,
+    ip: req.ip,
+    userAgent: req.get('User-Agent'),
+  });
 
-export const createItem = asyncHandler(async () => {
-  throw notImplemented('新增业务条目（POST /business-items）');
+  return sendSuccess(res, { status: 201, message: '创建成功', data: { item } });
 });
 
-export const updateItem = asyncHandler(async () => {
-  throw notImplemented('编辑业务条目（PATCH /business-items/:id）');
+export const updateItem = asyncHandler(async (req, res) => {
+  const id = parsePositiveIntParam(req.params.id);
+  const item = await updateBusinessItem({
+    id,
+    input: req.validated.body,
+    actor: req.user,
+    ip: req.ip,
+    userAgent: req.get('User-Agent'),
+  });
+
+  return sendSuccess(res, { message: '更新成功', data: { item } });
 });
 
-export const deleteItem = asyncHandler(async () => {
-  throw notImplemented('删除业务条目（DELETE /business-items/:id）');
+export const deleteItem = asyncHandler(async (req, res) => {
+  const id = parsePositiveIntParam(req.params.id);
+  const result = await deleteBusinessItem({
+    id,
+    actor: req.user,
+    ip: req.ip,
+    userAgent: req.get('User-Agent'),
+  });
+
+  return sendSuccess(res, { message: '已删除', data: result });
 });

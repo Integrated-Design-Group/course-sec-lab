@@ -19,42 +19,43 @@ after(async () => {
   await server.close();
 });
 
-test('列表接口返回分页结构', async () => {
+test('列表接口返回分页结构（内存种子 11 条）', async () => {
   const response = await fetch(`${server.baseUrl}/api/v1/business-items`);
   assert.equal(response.status, 200);
 
   const body = await response.json();
   assert.equal(body.success, true);
-  assert.equal(body.data.items.length, 3);
-  assert.equal(body.meta.pagination.total, 3);
+  assert.equal(body.data.items.length, 10);
+  assert.equal(body.meta.pagination.total, 11);
   assert.equal(body.meta.pagination.page, 1);
   assert.equal(body.meta.pagination.pageSize, 10);
-  assert.equal(body.meta.pagination.hasNext, false);
-  assert.equal(body.data.items[0].owner.id, 2);
+  assert.equal(body.meta.pagination.hasNext, true);
+  // 排序固定为 created_at DESC, id DESC，最新的是 id=11
+  assert.equal(body.data.items[0].id, 11);
 });
 
 test('pageSize=2 时分页元数据正确', async () => {
   const response = await fetch(`${server.baseUrl}/api/v1/business-items?page=1&pageSize=2`);
   const body = await response.json();
   assert.equal(body.data.items.length, 2);
-  assert.equal(body.meta.pagination.totalPages, 2);
+  assert.equal(body.meta.pagination.totalPages, 6);
   assert.equal(body.meta.pagination.hasNext, true);
 });
 
 test('status 过滤只返回草稿', async () => {
   const response = await fetch(`${server.baseUrl}/api/v1/business-items?status=draft`);
   const body = await response.json();
-  assert.equal(body.meta.pagination.total, 1);
-  assert.equal(body.data.items[0].status, 'draft');
+  assert.equal(body.meta.pagination.total, 2);
+  assert.ok(body.data.items.every((item) => item.status === 'draft'));
 });
 
-test('keyword 过滤命中标题', async () => {
+test('keyword 过滤命中标题（计算机网络匹配 2 条）', async () => {
   const response = await fetch(
     `${server.baseUrl}/api/v1/business-items?keyword=${encodeURIComponent('计算机网络')}`,
   );
   const body = await response.json();
-  assert.equal(body.meta.pagination.total, 1);
-  assert.ok(body.data.items[0].title.includes('计算机网络'));
+  assert.equal(body.meta.pagination.total, 2);
+  assert.ok(body.data.items.every((item) => item.title.includes('计算机网络')));
 });
 
 test('非法 status 枚举返回 400', async () => {
@@ -62,6 +63,22 @@ test('非法 status 枚举返回 400', async () => {
   assert.equal(response.status, 400);
   const body = await response.json();
   assert.equal(body.code, 'VALIDATION_ERROR');
+});
+
+test('“我的条目”只返回当前登录用户的数据', async () => {
+  const response = await fetch(`${server.baseUrl}/api/v1/business-items?mine=true&pageSize=50`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.meta.pagination.total, 7);
+  assert.ok(body.data.items.every((item) => item.owner.id === 2));
+});
+
+test('未登录请求“我的条目”返回 401', async () => {
+  const response = await fetch(`${server.baseUrl}/api/v1/business-items?mine=true`);
+  assert.equal(response.status, 401);
+  assert.equal((await response.json()).code, 'UNAUTHORIZED');
 });
 
 test('详情返回条目，不存在返回 404', async () => {
@@ -82,20 +99,8 @@ test('非法 id 返回 400', async () => {
   assert.equal((await response.json()).code, 'VALIDATION_ERROR');
 });
 
-test('写操作在框架阶段返回 501，且需要登录', async () => {
-  const anonymous = await fetch(`${server.baseUrl}/api/v1/business-items`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title: 'x' }),
-  });
-  assert.equal(anonymous.status, 401);
-
-  const authed = await fetch(`${server.baseUrl}/api/v1/business-items`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ title: 'x' }),
-  });
-  assert.equal(authed.status, 501);
-  const body = await authed.json();
-  assert.equal(body.code, 'NOT_IMPLEMENTED');
+test('列表支持 mine=false 且不要求登录', async () => {
+  const response = await fetch(`${server.baseUrl}/api/v1/business-items?mine=false`);
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).meta.pagination.total, 11);
 });

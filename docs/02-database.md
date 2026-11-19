@@ -76,7 +76,7 @@ erDiagram
 | `schema_migrations` | 迁移版本记录 | 迁移脚本自动维护 |
 | `roles` | 角色字典 | 种子 |
 | `users` | 账号 | 种子 |
-| `business_items` | 业务条目（教材/笔记） | 种子（只读接口） |
+| `business_items` | 业务条目（教材/笔记） | 种子 + 写接口 |
 | `uploaded_files` | 上传文件元数据 | 上传接口 |
 | `audit_logs` | 审计日志 | 登录/退出/上传 |
 
@@ -110,6 +110,10 @@ erDiagram
 | `deleted_at` | DATETIME(3) | 是 | NULL | 软删除；非空即视为已删除 |
 
 > 说明：唯一索引与软删除并存时，被软删除的用户名仍占用唯一键。课程阶段接受该限制；如需复用需改为“唯一键 + 状态”或物理归档。
+
+### 4.3.1 条目状态流转
+
+`business_items.status` 的合法流转由应用层强制执行（数据库只存枚举值），规则见 [03-api.md §8.8](./03-api.md#88-编辑业务条目--状态流转)。数据库层不提供触发器，迁移文件也不包含状态机逻辑。
 
 ### 4.3 `business_items` 业务条目表
 
@@ -184,19 +188,26 @@ erDiagram
 | `uploaded_files` | `idx_uploaded_files_owner_created` | INDEX(owner_id, created_at) | 用户文件列表 |
 | `audit_logs` | `idx_audit_logs_actor_created` | INDEX(actor_id, created_at) | 按人审计 |
 | `audit_logs` | `idx_audit_logs_action_created` | INDEX(action, created_at) | 按动作审计 |
+| `business_items` | `idx_business_items_owner_status_created` | INDEX(owner_id, status, created_at) | “我的条目 + 状态过滤”（迁移 002） |
+| `audit_logs` | `idx_audit_logs_result_created` | INDEX(result, created_at) | 管理端按结果检索审计（迁移 002） |
+
+> 迁移 `002_m1_business_indexes.sql` 只新增上述两个索引，不改动 001 中已定义的列与约束。
 
 > 列表接口当前按 `created_at DESC, id DESC` 排序；`keyword` 使用 `LIKE '%kw%'`（参数化，不会产生 SQL 注入，但无法走前缀索引）。数据量上来后建议改为全文索引或搜索引擎。
 
 ## 6. 种子数据
 
-文件：`db/seeds/001_seed_base.sql`（可重复执行，固定主键 + `ON DUPLICATE KEY UPDATE`）。
+文件：`db/seeds/001_seed_base.sql` 与 `db/seeds/002_seed_m1_demo.sql`（均可重复执行，固定主键 + `ON DUPLICATE KEY UPDATE`）。
 
 | 类型 | 内容 |
 | --- | --- |
 | 角色 | `admin`（管理员）、`student`（学生） |
 | 账号 | `admin` / `student`，密码均为 `Demo@123456`（bcrypt cost=10） |
-| 业务条目 | 3 条：2 条 `published`、1 条 `draft`，均属于演示学生 |
-| 审计日志 | 不预置（由登录/上传产生） |
+| 业务条目（001） | 3 条：2 条 `published`、1 条 `draft`，均属于演示学生 |
+| 业务条目（002，M1） | 8 条（id 4～11）：覆盖 `published` / `reserved` / `sold` / `draft` / `archived`；所有者混合 admin 与 student，用于验证“我的条目”过滤、分页与管理员审核 |
+| 审计日志 | 不预置（由登录/写操作/上传产生） |
+
+条目合计 **11 条**（student 7 条、admin 4 条），分类覆盖 `textbook` / `notes` / `other`。
 
 **密码哈希说明**：
 
@@ -208,7 +219,11 @@ erDiagram
 
 ## 7. 迁移与重置
 
-> **验证记录（2026-11-13）**：在 MySQL 8.4.4 容器中实测：迁移创建 6 张表；种子写入 `roles=2 users=2 business_items=3`；`reset → migrate → seed` 可重复执行并重新登录；宿主机开发模式（`127.0.0.1:3306`）的迁移与种子同样通过。详见 [framework-acceptance.md](./framework-acceptance.md) 附录 A。
+> **验证记录**：
+>
+> - **2026-11-13（框架阶段，MySQL 8.4.4 容器实测）**：`001_init_schema.sql` 创建 6 张表；`001_seed_base.sql` 写入 `roles=2 users=2 business_items=3`；`reset → migrate → seed` 可重复执行并重新登录；宿主机开发模式（`127.0.0.1:3306`）同样通过。
+> - **2026-11-18（M1，内存驱动实测）**：新增 `002_m1_business_indexes.sql` 与 `002_seed_m1_demo.sql`；内存种子同步扩展为 11 条条目。后端 44 项测试、冒烟 6 项、契约 11 项通过。
+> - **未验证及原因**：MySQL 下的 002 迁移与 002 种子**未在本环境复验**——本次执行环境未启动 MySQL 容器（只读/沙箱限制与耗时考虑），仅通过 SQL 静态审阅与内存驱动等价数据验证。需在本地按 `docs/13-m1-delivery-runbook.md` 第 2.4 节执行一次 `db:reset → db:migrate → db:seed` 复核。
 
 ### 7.1 首次建库（空库 → 可运行）
 
@@ -244,9 +259,9 @@ bash scripts/seed.sh
 
 ### 7.3 迁移规范
 
-- 文件名：`NNN_描述.sql`，三位序号递增（`001`、`002`…）。
+- 文件名：`NNN_描述.sql`，三位序号递增（当前为 `001`、`002`）。
 - **已应用的迁移禁止修改**，只能新增下一个文件。
-- 每个迁移必须自带注释，说明目标与回滚方式（框架阶段不做 down 脚本，回滚依赖备份）。
+- 每个迁移必须自带注释，说明目标与回滚方式（当前不做 down 脚本，回滚依赖备份）。
 - 结构变更同时更新本文档与 [03-api.md](./03-api.md)（若影响接口）。
 
 ## 8. 内存驱动说明（仅本地演示）

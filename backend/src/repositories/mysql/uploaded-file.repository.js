@@ -36,3 +36,11 @@ export async function findByIdForOwner(id, ownerId) {
   ]);
   return rows[0] ?? null;
 }
+
+export async function updateStatus(id, status, at = new Date()) {
+  const [result] = await getPool().query(
+    'UPDATE uploaded_files SET status = ?, updated_at = ? WHERE id = ?',
+    [status, at, id],
+  );
+  return result.affectedRows;
+}

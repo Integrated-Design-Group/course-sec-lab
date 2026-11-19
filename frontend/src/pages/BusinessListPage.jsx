@@ -1,5 +1,8 @@
 /**
- * 业务条目列表页（只读）
+ * 业务条目列表页（M1）
+ * - 支持状态过滤、关键词搜索、分页
+ * - 支持“只看我的”（mine=true，需要登录）
+ * - 从列表可直接进入新建 / 详情
  */
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -22,6 +25,7 @@ export function BusinessListPage() {
   const [status, setStatus] = useState('');
   const [keyword, setKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [mine, setMine] = useState(false);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,6 +41,7 @@ export function BusinessListPage() {
       pageSize: PAGE_SIZE,
       status: status || undefined,
       keyword: keyword || undefined,
+      mine,
       signal: controller.signal,
     })
       .then((envelope) => setData(envelope))
@@ -48,11 +53,11 @@ export function BusinessListPage() {
       });
 
     return () => controller.abort();
-  }, [page, status, keyword, reloadKey]);
+  }, [page, status, keyword, mine, reloadKey]);
 
   const items = data?.data?.items ?? [];
   const pagination = data?.meta?.pagination ?? null;
-  const hasFilters = Boolean(status || keyword);
+  const hasFilters = Boolean(status || keyword || mine);
 
   function handleSearch(event) {
     event.preventDefault();
@@ -64,6 +69,7 @@ export function BusinessListPage() {
     setSearchInput('');
     setKeyword('');
     setStatus('');
+    setMine(false);
     setPage(1);
   }
 
@@ -71,16 +77,11 @@ export function BusinessListPage() {
     <>
       <PageHeader
         title="教材条目"
-        description="框架阶段只读列表：写操作尚未实现，接口返回 501 占位。"
+        description="浏览、搜索与筛选条目；登录后可发布并维护自己的条目。"
         actions={
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled
-            title="框架阶段占位，后续 Issue 实现"
-          >
-            新增条目（占位）
-          </button>
+          <Link className="btn btn-primary" to="/business/new">
+            + 新建条目
+          </Link>
         }
       />
 
@@ -108,6 +109,17 @@ export function BusinessListPage() {
               </option>
             ))}
           </select>
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={mine}
+              onChange={(event) => {
+                setMine(event.target.checked);
+                setPage(1);
+              }}
+            />
+            只看我的
+          </label>
           <button type="submit" className="btn btn-primary">
             搜索
           </button>
@@ -126,7 +138,13 @@ export function BusinessListPage() {
         {!loading && !error && items.length === 0 && (
           <EmptyState
             title="没有符合条件的条目"
-            description={hasFilters ? '尝试清除筛选条件，或使用其他关键词。' : '数据库暂无业务条目。'}
+            description={
+              mine
+                ? '你还没有发布过条目，点击右上角“新建条目”开始。'
+                : hasFilters
+                  ? '尝试清除筛选条件，或使用其他关键词。'
+                  : '数据库暂无业务条目。'
+            }
           />
         )}
 
@@ -141,6 +159,7 @@ export function BusinessListPage() {
                   <th>成色</th>
                   <th className="align-right">价格</th>
                   <th>状态</th>
+                  <th>发布者</th>
                   <th>创建时间</th>
                 </tr>
               </thead>
@@ -157,6 +176,7 @@ export function BusinessListPage() {
                     <td>
                       <StatusBadge status={item.status} />
                     </td>
+                    <td>{item.owner.displayName ?? `用户 #${item.owner.id}`}</td>
                     <td className="muted">{formatDateTime(item.createdAt)}</td>
                   </tr>
                 ))}

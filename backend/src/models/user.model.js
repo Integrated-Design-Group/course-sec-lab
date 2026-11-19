@@ -26,6 +26,20 @@ export function validateLoginPayload(body) {
   return validateObject(body, loginSchema);
 }
 
+/** 管理端用户列表查询（A-07） */
+export const listUsersQuerySchema = {
+  page: { type: 'int', min: 1, max: 10000, default: 1 },
+  pageSize: { type: 'int', min: 1, max: 50, default: 10 },
+  status: { type: 'enum', enum: Object.values(USER_STATUS) },
+  keyword: { type: 'string', min: 1, max: 60 },
+};
+
+/** 管理端启用/停用账号（A-07） */
+export const updateUserStatusSchema = {
+  status: { required: true, type: 'enum', enum: Object.values(USER_STATUS) },
+};
+
+
 /** 内部使用：数据库行（snake_case）→ 对外用户对象（camelCase）。 */
 export function toPublicUser(row) {
   if (!row) return null;

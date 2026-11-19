@@ -54,14 +54,14 @@
 
 | 任务组 | 范围 | 任务数 | 已完成 | 当前状态 |
 | --- | --- | :---: | :---: | --- |
-| A 业务模块开发 | 登录/角色、CRUD、联调、上传、种子 | 11 | 2（框架阶段） | 待认领 |
-| B 漏洞工作 | 设计评审、VULN-01～05、验证、清单 | 12 | 0 | 待认领 |
+| A 业务模块开发 | 登录/角色、CRUD、联调、上传、种子 | 11 | 11（含 2 项框架阶段） | 完成（M1，2026-11-18） |
+| B 漏洞工作 | 设计评审、VULN-01～05、验证、清单 | 12 | 1（B-01 设计冻结） | 进行中（实现未开始） |
 | C 云部署 | 资源、安全组、编排、域名、回滚 | 9 | 0 | 待认领 |
 | D 文档 | 部署/漏洞/验证/访问/隔离/评审 | 7 | 0 | 待认领 |
 | E 测试支持 | 扫描对接、预约、日志、下线、复盘 | 7 | 0 | 待认领 |
-| **合计** | - | **46** | **2** | - |
+| **合计** | - | **46** | **12** | - |
 
-> 勾选后请同步更新本表的“已完成”数字（同一个 PR）。
+> 勾选后请同步更新本表的“已完成”数字（同一个 PR）。M1 与 B-01 为本地完成、**待提 PR**，合并后请补充 PR 链接。
 
 ---
 
@@ -77,61 +77,61 @@
   - 完成人 / 日期：框架搭建 Agent / 2026-11-13
   - 状态：完成（框架阶段完成）
 
-- [ ] **A-01 登录与角色权限模型落地**
+- [x] **A-01 登录与角色权限模型落地**
   - 建议负责人 / 角色：后端开发（1 人）
   - 依赖：A-00
   - 完成定义：管理接口使用 `requireRole('admin')`；学生只能操作自己的条目；401/403 行为与 [docs/03](docs/03-api.md) 一致；补充接口测试
-  - 完成证据：待补充（PR 链接 / 测试命令输出 / docs/03 更新）
-  - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 完成证据：`backend/src/middlewares/auth.js`（requireRole / optionalAuthenticate）、`backend/src/routes/admin.routes.js`、`backend/tests/admin.test.mjs`；`npm --prefix backend test` 44 项通过；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-18
+  - 状态：完成（本地完成，待提 PR）
 
-- [ ] **A-02 业务条目创建接口（POST /business-items）**
+- [x] **A-02 业务条目创建接口（POST /business-items）**
   - 建议负责人 / 角色：后端开发
   - 依赖：A-01
   - 完成定义：入参校验（标题/作者/价格/分类/成色）、归属当前用户、初始状态 `draft`、写审计、替换 501、补充测试
-  - 完成证据：待补充（PR / `npm --prefix backend test` 输出 / docs/03 示例）
-  - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 完成证据：`backend/src/services/business.service.js`、`backend/src/controllers/business.controller.js`、`backend/src/repositories/{mysql,memory}/`；`backend/tests/business-write.test.mjs`；初始状态固定 draft、`coverFileId` 归属校验；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-18
+  - 状态：完成（本地完成，待提 PR）
 
-- [ ] **A-03 业务条目编辑与删除（PATCH/DELETE）**
+- [x] **A-03 业务条目编辑与删除（PATCH/DELETE）**
   - 建议负责人 / 角色：后端开发
   - 依赖：A-01、A-02
   - 完成定义：归属校验（本人或 admin）、软删除、状态流转合法、审计、冲突处理、补充测试
-  - 完成证据：待补充（PR / 权限测试输出 / docs/02 状态说明）
-  - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 完成证据：状态机 `ITEM_STATUS_TRANSITIONS`、软删除 + 孤儿封面归档、`expectedUpdatedAt` 乐观锁（409）、审计 `business_item.update/delete`；`backend/tests/business-write.test.mjs` 9 项通过；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-18
+  - 状态：完成（本地完成，待提 PR）
 
-- [ ] **A-04 列表与详情能力增强**
+- [x] **A-04 列表与详情能力增强**
   - 建议负责人 / 角色：后端开发
   - 依赖：A-02
   - 完成定义：支持“我的条目”过滤、分页稳定排序、必要的索引补充（新迁移文件）、文档同步
-  - 完成证据：待补充（PR / EXPLAIN 或查询输出 / 迁移文件路径）
-  - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 完成证据：`GET /business-items?mine=true`（可选认证，未登录 401）；固定 `created_at DESC, id DESC`；`db/migrations/002_m1_business_indexes.sql` 新增 `idx_business_items_owner_status_created`；`backend/tests/business.test.mjs` 10 项通过；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-18
+  - 状态：完成（本地完成，待提 PR）
 
-- [ ] **A-05 前端条目表单与前后端联调**
+- [x] **A-05 前端条目表单与前后端联调**
   - 建议负责人 / 角色：前端开发
   - 依赖：A-02、A-03
   - 完成定义：新建/编辑表单、字段级错误提示、loading/error/empty 三态、登录失效跳转、与 API 契约字段一致
-  - 完成证据：待补充（PR / 截图 / 构建输出）
-  - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 完成证据：`frontend/src/pages/BusinessFormPage.jsx`、`frontend/src/pages/BusinessListPage.jsx`、`BusinessDetailPage.jsx`、`api/business.js`；路由 `/business/new`、`/business/:id/edit`；`npm --prefix frontend run build` 57 模块通过；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-18
+  - 状态：完成（本地完成，待提 PR）
 
-- [ ] **A-06 上传与封面关联**
+- [x] **A-06 上传与封面关联**
   - 建议负责人 / 角色：全栈（后端为主）
   - 依赖：A-02
   - 完成定义：条目可绑定 `cover_file_id`；封面通过受控鉴权接口读取（不公开上传目录）；替换/删除时处理孤儿文件
-  - 完成证据：待补充（PR / 上传与读取截图 / docs/03 更新）
-  - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 完成证据：`backend/src/services/upload.service.js#readUploadForUser`（本人/管理员/条目封面引用）、`archiveOrphanedFile`；`GET /uploads/:id` 二进制流 + 路径逃逸防护；`backend/tests/upload.test.mjs` 7 项、`frontend` 详情页 Blob 渲染；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-18
+  - 状态：完成（本地完成，待提 PR）
 
-- [ ] **A-07 管理后台基础能力**
+- [x] **A-07 管理后台基础能力**
   - 建议负责人 / 角色：全栈
   - 依赖：A-01
   - 完成定义：用户列表/停用、条目审核、审计日志检索页；全部接口后端鉴权，前端仅做可见性
-  - 完成证据：待补充（PR / 截图 / 权限测试）
-  - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 完成证据：`backend/src/routes/admin.routes.js`、`services/admin.service.js`、`controllers/admin.controller.js`；`frontend/src/pages/AdminPage.jsx` 三面板；`backend/tests/admin.test.mjs` 8 项通过；审计动作 `admin.user.status`；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-18
+  - 状态：完成（本地完成，待提 PR）
 
 - [x] **A-08 种子数据与重置脚本（框架基础版）**
   - 建议负责人 / 角色：框架负责人（已完成）
@@ -141,33 +141,33 @@
   - 完成人 / 日期：框架搭建 Agent / 2026-11-13
   - 状态：完成（框架阶段完成）
 
-- [ ] **A-09 业务演示数据与重置扩展**
+- [x] **A-09 业务演示数据与重置扩展**
   - 建议负责人 / 角色：后端开发 + 文档负责人
   - 依赖：A-02、A-03、A-08
   - 完成定义：覆盖各状态的演示数据、分页/过滤样例、重置后仍可重复演示；更新种子说明
-  - 完成证据：待补充（PR / `db:seed` 输出 / docs/02 种子表）
-  - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 完成证据：`db/seeds/002_seed_m1_demo.sql` 新增 8 条（id 4～11），状态覆盖 published/reserved/sold/draft/archived，所有者混合 admin/student；内存种子同步；docs/02 §6 已更新；`db:seed` 预期 `roles=2 users=2 business_items=11`；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-18
+  - 状态：完成（本地完成，待提 PR）
 
-- [ ] **A-10 业务测试与接口文档同步**
+- [x] **A-10 业务测试与接口文档同步**
   - 建议负责人 / 角色：测试/后端
   - 依赖：A-02、A-03、A-05
   - 完成定义：新增写接口的校验/权限/审计测试；`tests/api` 契约同步；docs/03 示例更新
-  - 完成证据：待补充（PR / 测试输出 / docs/03 diff）
-  - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 完成证据：后端 44 项、`tests/smoke` 6 项、`tests/api` 11 项全部通过（内存驱动）；`docs/03-api.md` 全量重写（15 个端点、状态机、受控读取、管理端）；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-18
+  - 状态：完成（本地完成，待提 PR）
 
 ### B. 漏洞工作（仅课程授权环境）
 
 > 开始前必须满足 [docs/08](docs/08-vuln-design.md) 第 5 节与 [docs/07](docs/07-security-isolation.md) 第 7 节的前置条件。漏洞代码一律在 `vuln/*` 分支，禁止合入 `main`。
 
-- [ ] **B-01 漏洞设计评审并冻结 VULN-01～05**
+- [x] **B-01 漏洞设计评审并冻结 VULN-01～05**
   - 建议负责人 / 角色：漏洞负责人 + 指导教师
   - 依赖：A-00（框架验收通过）
   - 完成定义：5 个漏洞的类别/端点/前置/影响/修复方向/验证用例完成评审；状态从“草案”改为“已设计”；冻结编号
-  - 完成证据：待补充（PR / 评审记录 / docs/08 状态表）
-  - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 完成证据：`docs/08-vuln-design.md` 新增 §1.1 设计评审记录，5 个 VULN 状态改为“已设计（未实现）”，端点/用例编号冻结；`docs/09-verify-template.md` 冻结 5 个 `VERIFY-VULN-0x-01`；**main 代码无漏洞改动**；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-18
+  - 状态：完成（本地完成，待提 PR）
 
 - [ ] **B-02 VULN-01 实现（独立分支 + 开关）**
   - 建议负责人 / 角色：漏洞开发
@@ -476,3 +476,4 @@
 | 日期 | 变更 | 操作人 | PR |
 | --- | --- | --- | --- |
 | 2026-11-13 | 创建 TODO 清单（框架阶段） | 框架搭建 Agent | 待合并 |
+| 2026-11-18 | 完成 M1（A-01～A-07、A-09、A-10）与 B-01 设计冻结；同步文档、种子与测试 | Harness | 待提 PR |

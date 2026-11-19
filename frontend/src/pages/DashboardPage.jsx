@@ -40,8 +40,8 @@ export function DashboardPage() {
   return (
     <>
       <PageHeader
-        title="框架概览"
-        description="框架阶段验收入口：健康检查、登录态与阶段边界一目了然。"
+        title="系统概览"
+        description="M1 业务阶段：健康检查、登录态、条目与审计能力一目了然。"
         actions={
           <button type="button" className="btn btn-outline" onClick={loadHealth} disabled={loading}>
             重新检查
@@ -117,13 +117,13 @@ export function DashboardPage() {
       </div>
 
       <section className="card">
-        <h2>框架阶段边界</h2>
+        <h2>当前阶段边界</h2>
         <ul className="check-list">
-          <li className="check-list__done">已实现：工程骨架、统一响应/错误码、配置校验、结构化日志</li>
-          <li className="check-list__done">已实现：users / roles / business_items / uploaded_files / audit_logs 表结构与迁移脚本</li>
-          <li className="check-list__done">已实现：健康检查、登录 / 退出 / 当前用户、业务条目只读接口、图片上传安全基线</li>
-          <li className="check-list__pending">占位：业务条目新增 / 编辑 / 删除（后端返回 501 NOT_IMPLEMENTED）</li>
-          <li className="check-list__pending">未开始：VULN-01～VULN-05 漏洞设计与实现（见 docs/08-vuln-design.md）</li>
+          <li className="check-list__done">已实现：统一响应/错误码、配置校验、结构化日志、健康检查</li>
+          <li className="check-list__done">已实现：登录 / 退出 / 当前用户 / 角色守卫</li>
+          <li className="check-list__done">已实现：业务条目增删改查（归属校验 + 状态机 + 乐观锁 + 审计）</li>
+          <li className="check-list__done">已实现：封面受控鉴权读取、管理端用户启停与审计检索</li>
+          <li className="check-list__pending">未实现：VULN-01～VULN-05 漏洞实现（设计已冻结，见 docs/08）</li>
           <li className="check-list__pending">未开始：云服务器部署（文档已给出架构与占位符，未创建任何真实资源）</li>
         </ul>
       </section>
@@ -131,12 +131,16 @@ export function DashboardPage() {
       <div className="grid grid-2">
         <Link className="card card-link" to="/business">
           <h3>教材条目列表 →</h3>
-          <p className="muted">验证分页、过滤与统一响应结构。</p>
+          <p className="muted">验证分页、过滤、我的条目与统一响应结构。</p>
+        </Link>
+        <Link className="card card-link" to="/business/new">
+          <h3>发布条目 →</h3>
+          <p className="muted">新建条目并上传封面，初始状态为草稿。</p>
         </Link>
         {user?.role === 'admin' && (
           <Link className="card card-link" to="/admin">
-            <h3>管理后台占位 →</h3>
-            <p className="muted">仅 admin 角色可见，用于验证角色守卫。</p>
+            <h3>管理后台 →</h3>
+            <p className="muted">用户启停、条目审核与审计日志检索。</p>
           </Link>
         )}
       </div>
