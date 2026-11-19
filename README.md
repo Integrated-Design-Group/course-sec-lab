@@ -219,4 +219,6 @@ course-sec-lab/
 | 浏览器端到端 | ⚠️ M0 有 11 项历史记录；M1 新增表单/管理页尚未做自动化 E2E，手测清单见 [13](docs/13-m1-delivery-runbook.md#26-浏览器手测清单) |
 | 公网部署 / 域名 / HTTPS | ⚠️ 未执行（按课程要求未创建云资源） |
 
-> 详细命令、关键输出与仍未验证项见 [13 交付流程](docs/13-m1-delivery-runbook.md) 与 [框架验收清单](docs/framework-acceptance.md) 附录 B。
+> 详细命令、关键输出与仍未验证项见 [框架验收清单](docs/framework-acceptance.md) 附录 A/B/D。
+
+Ciallo～(∠・ω< )⌒☆
