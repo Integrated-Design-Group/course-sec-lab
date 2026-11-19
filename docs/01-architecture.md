@@ -86,7 +86,7 @@ sequenceDiagram
     Note over A: 任一环节失败 → 401 + 统一错误码
 ```
 
-### 4.3 上传
+### 4.3 上传与读取
 
 ```text
 POST /api/v1/uploads (multipart, 字段 file)
@@ -96,6 +96,12 @@ POST /api/v1/uploads (multipart, 字段 file)
   → INSERT uploaded_files
   → 写审计
   → 返回文件元数据（不返回可公开下载 URL）
+
+GET /api/v1/uploads/:id (Authorization: Bearer)
+  → authenticate
+  → 授权：本人 / 管理员 / 该文件被未删除条目用作封面
+  → 校验存储路径位于 UPLOAD_DIR 内 + 文件存在
+  → 以二进制流返回（Content-Type 取服务端检测值、nosniff、private cache）
 ```
 
 ## 5. 网络与端口矩阵
@@ -130,11 +136,13 @@ POST /api/v1/uploads (multipart, 字段 file)
 | ADR-03 | 单角色 `users.role_id` | 课程场景足够，模型简单 | 多角色需新增 `user_roles` 表 |
 | ADR-04 | 统一响应信封 | 前端错误处理统一，契约可测试 | 与第三方 SDK 风格不一致 |
 | ADR-05 | 内存驱动做本地演示 | 降低“跑起来”的门槛 | 必须用配置校验防止误上线 |
-| ADR-06 | 上传文件不提供公开读取 | 避免框架阶段就出现任意文件读取 | 封面展示留到 M1 用受控签名/鉴权接口实现 |
+| ADR-06 | 上传文件不提供公开静态读取，改为受控鉴权读取 | 避免出现任意文件读取/静态目录执行；同时满足买卖双方查看封面的业务需要 | 前端不能用 `<img src>` 直接加载，需 fetch + Blob URL（已封装 `fetchCoverBlob`） |
 
 ## 8. 已知限制
 
 - 单机部署，无负载均衡与多副本；JWT 撤销表与登录限流均为**进程内**。
 - 未配置 HTTPS（证书申请属于部署阶段工作，见 [04-deploy.md](./04-deploy.md)）。
 - 无后台任务队列；审计写入为同步（失败只记日志，不阻断业务）。
-- 前端 Token 存 `localStorage`，框架阶段方案；生产建议改 httpOnly Cookie + CSRF 防护。
+- 前端 Token 存 `localStorage`，当前阶段方案；生产建议改 httpOnly Cookie + CSRF 防护。
+- 读接口（列表/详情）当前对所有访问者返回全部未删除条目（含草稿）；“草稿仅本人可见”尚未实现。
+- 上传文件本体随“孤儿封面”归档而删除，只保留元数据；如需长期留档应在部署层做卷备份。

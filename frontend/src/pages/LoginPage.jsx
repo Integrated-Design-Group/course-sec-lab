@@ -97,7 +97,7 @@ export function LoginPage() {
       </form>
 
       <div className="demo-accounts">
-        <p className="muted">演示账号（密码均为 <code>Demo@123456</code>，仅限框架阶段使用）</p>
+        <p className="muted">演示账号（密码均为 <code>Demo@123456</code>，仅限课程环境使用）</p>
         <div className="demo-accounts__buttons">
           {DEMO_ACCOUNTS.map((account) => (
             <button

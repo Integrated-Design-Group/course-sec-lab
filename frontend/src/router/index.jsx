@@ -14,6 +14,7 @@ import { LoginPage } from '../pages/LoginPage.jsx';
 import { DashboardPage } from '../pages/DashboardPage.jsx';
 import { BusinessListPage } from '../pages/BusinessListPage.jsx';
 import { BusinessDetailPage } from '../pages/BusinessDetailPage.jsx';
+import { BusinessFormPage } from '../pages/BusinessFormPage.jsx';
 import { AdminPage } from '../pages/AdminPage.jsx';
 import { NotFoundPage } from '../pages/NotFoundPage.jsx';
 
@@ -33,7 +34,9 @@ export function AppRoutes() {
       >
         <Route index element={<DashboardPage />} />
         <Route path="business" element={<BusinessListPage />} />
+        <Route path="business/new" element={<BusinessFormPage />} />
         <Route path="business/:id" element={<BusinessDetailPage />} />
+        <Route path="business/:id/edit" element={<BusinessFormPage />} />
         <Route
           path="admin"
           element={

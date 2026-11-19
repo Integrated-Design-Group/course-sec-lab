@@ -45,7 +45,7 @@ export function AppHeader() {
           </NavLink>
           {user?.role === 'admin' && (
             <NavLink to="/admin" className={navClass}>
-              管理占位
+              管理后台
             </NavLink>
           )}
         </nav>

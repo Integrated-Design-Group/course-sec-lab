@@ -46,11 +46,13 @@
 | Docker | ✅ 29.9.3（Docker Desktop，Linux 容器；用户级安装，CLI 需显式加入 PATH） |
 | Docker Compose | ✅ v5.7.0 |
 | MySQL | ✅ 8.4.4（官方容器；宿主机开发模式经 `127.0.0.1:3306` 连通） |
-| 前端构建 | ✅ `vite build`（55 个模块；镜像内构建同样通过） |
-| 后端测试 | ✅ 23 项 `node:test`（内存驱动） |
+| 前端构建 | ✅ `vite build`（M0 为 55 模块；M1 为 57 模块） |
+| 后端测试 | ✅ 23 项 `node:test`（M0；M1 已扩至 44 项，见下方说明） |
 | MySQL 迁移 / 种子 / 重置 | ✅ 容器内与宿主机开发模式均通过 |
 | Compose 全栈 | ✅ 构建 / 启动 / 健康检查 / 登录 / Nginx 反代通过 |
 | 浏览器端到端 | ✅ Edge 157 无头模式 11 项通过 |
+
+> **M1 更新（2026-11-18，内存驱动实测）**：后端 `node:test` 扩至 **44 项**（health 4 / auth 6 / business 10 / business-write 9 / upload 7 / admin 8）；冒烟 **6 项**、API 契约 **11 项**；前端生产构建 **57 模块**；框架自检 **26 项**。MySQL 下的 `002` 迁移与种子**未复验**，原因见 [02 数据库](./02-database.md) 第 7 节。
 
 > 上表只记录事实。未验证项（公网部署、HTTPS、漏洞验证、性能）仍不得写成“通过”。
 
@@ -112,7 +114,7 @@
 | `APP_NAME` | `course-sec-lab` | 否 | 服务名，出现在响应与日志 |
 | `APP_VERSION` | 读取 `package.json` | 否 | 版本号 |
 | `PORT` | `3000` | 否 | 后端监听端口 |
-| `API_PREFIX` | `/api/v1` | 否 | **框架阶段固定**，改成其他值会启动失败 |
+| `API_PREFIX` | `/api/v1` | 否 | **当前固定**，改成其他值会启动失败 |
 | `CORS_ORIGIN` | `http://localhost:5173` | 否 | 逗号分隔的白名单；同源请求自动放行 |
 | `TRUST_PROXY` | `0` | 否 | 经 Nginx 时设 `1`（影响 `req.ip` 与限流键） |
 | `LOG_LEVEL` | `info` | 否 | 日志级别 |

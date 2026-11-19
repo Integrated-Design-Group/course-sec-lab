@@ -12,7 +12,7 @@ export function MainLayout() {
         <Outlet />
       </main>
       <footer className="app-footer">
-        <span>课程 Web 安全靶场 · 框架阶段（未植入任何漏洞）</span>
+        <span>课程 Web 安全靶场 · M1 业务阶段（未植入任何漏洞）</span>
         <span className="muted">仅限课程授权范围内的安全测试</span>
       </footer>
     </div>

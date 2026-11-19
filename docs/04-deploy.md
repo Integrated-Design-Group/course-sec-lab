@@ -69,7 +69,7 @@ git clone <课程仓库地址> .
 git checkout <课程约定的 tag 或 main>
 ```
 
-> 框架阶段不执行 `git push`，也不在服务器上直接改代码；所有变更走 PR。
+> 本仓库不自动执行 `git push`，也不在服务器上直接改代码；所有变更走 PR。
 
 ### 4.3 生成并配置 `.env`
 
@@ -108,7 +108,7 @@ bash deploy/scripts/wait-for-db.sh
 # 迁移（容器内执行，数据库不暴露到宿主机）
 docker compose -f deploy/docker-compose.yml --env-file .env run --rm backend node scripts/migrate.mjs
 
-# 课程演示需要种子数据时执行；公网长期开放前必须改密/删除演示账号
+# 课程演示需要种子数据时执行（依次执行 001/002 种子，共 11 条演示条目）；公网长期开放前必须改密/删除演示账号
 docker compose -f deploy/docker-compose.yml --env-file .env run --rm backend node scripts/seed.mjs
 
 # 启动应用
@@ -160,7 +160,7 @@ docker compose -f deploy/docker-compose.yml --env-file .env ps
 | 容器 stdout | - | - | `docker compose ... logs -f --tail=100 backend` |
 | Nginx 访问日志 | stdout | - | `docker compose ... logs -f web` |
 
-日志轮转：Compose 已限制 `json-file` 为 `10m × 3`；文件日志需自行配合 `logrotate` 或定期归档（框架阶段未内置）。
+日志轮转：Compose 已限制 `json-file` 为 `10m × 3`；文件日志需自行配合 `logrotate` 或定期归档（当前未内置）。
 
 ## 6. 备份
 
