@@ -48,13 +48,18 @@ function signAccessToken(userRow) {
  */
 export async function login({ identifier, password, ip, userAgent }) {
   const throttleKey = buildLoginKey(ip, identifier);
-  assertLoginAllowed(throttleKey, THROTTLE_POLICY);
+  // ──【刻意漏洞 VULN-05】认证缺陷：关闭登录失败限流，允许无限次暴力尝试 ──
+  if (config.vuln.mode !== 'VULN-05') {
+    assertLoginAllowed(throttleKey, THROTTLE_POLICY);
+  }
 
   const userRow = await repositories.users.findByUsernameOrEmail(identifier);
   const passwordOk = await verifyPassword(password, userRow?.password_hash ?? DEMO_PASSWORD_HASH);
 
   if (!userRow || !passwordOk) {
-    recordLoginFailure(throttleKey, THROTTLE_POLICY);
+    if (config.vuln.mode !== 'VULN-05') {
+      recordLoginFailure(throttleKey, THROTTLE_POLICY);
+    }
     await recordAudit({
       actorId: userRow?.id ?? null,
       action: 'auth.login',

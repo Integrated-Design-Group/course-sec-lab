@@ -187,6 +187,11 @@ const uploadConfig = Object.freeze({
   allowedMime: Object.freeze(uploadAllowedMime),
 });
 
+// 靶场漏洞开关：默认 off（安全基线）；vuln/* 分支按 VULN-0x 逐一启用
+const vulnConfig = Object.freeze({
+  mode: readEnum('VULN_MODE', ['off', 'VULN-01', 'VULN-02', 'VULN-03', 'VULN-04', 'VULN-05'], 'off'),
+});
+
 function deepFreeze(object) {
   for (const value of Object.values(object)) {
     if (value && typeof value === 'object' && !Object.isFrozen(value)) deepFreeze(value);
@@ -200,6 +205,7 @@ export const config = deepFreeze({
   db: dbConfig,
   auth: authConfig,
   upload: uploadConfig,
+  vuln: vulnConfig,
 });
 
 /** 日志中可安全输出的配置摘要（不含任何密钥）。 */
