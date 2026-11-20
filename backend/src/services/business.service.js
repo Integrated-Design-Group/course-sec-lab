@@ -10,6 +10,7 @@
  *  - 所有写操作写审计日志（不含密码/token）
  */
 import { repositories } from '../repositories/index.js';
+import { config } from '../config/index.js';
 import {
   ITEM_STATUS,
   ITEM_STATUS_TRANSITIONS,
@@ -28,6 +29,8 @@ function isAdmin(actor) {
 function assertCanOperate(actor, row) {
   if (!actor) throw new AppError('UNAUTHORIZED');
   if (isAdmin(actor)) return;
+  // ──【刻意漏洞 VULN-03】水平越权（IDOR）：跳过归属校验，任意登录用户可操作他人条目 ──
+  if (config.vuln.mode === 'VULN-03') return;
   if (Number(row.owner_id) !== Number(actor.id)) {
     throw new AppError('FORBIDDEN', '只能操作自己发布的条目');
   }
