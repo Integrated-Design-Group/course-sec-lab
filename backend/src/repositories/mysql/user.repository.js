@@ -3,6 +3,7 @@
  * 返回值统一使用数据库行（snake_case），由 models 层负责序列化。
  */
 import { getPool } from '../../db/pool.js';
+import { config } from '../../config/index.js';
 
 const USER_SELECT = `
   SELECT
@@ -14,6 +15,16 @@ const USER_SELECT = `
 `;
 
 export async function findByUsernameOrEmail(identifier) {
+  // ──【刻意漏洞 VULN-01】登录 SQL 注入（仅 VULN_MODE=VULN-01 的靶场实例启用）──
+  // 把用户输入直接拼接进 WHERE 条件，使认证逻辑可被改写；默认 off 走安全参数化查询。
+  if (config.vuln.mode === 'VULN-01') {
+    const [rows] = await getPool().query(
+      `${USER_SELECT} WHERE (u.username = '${identifier}' OR u.email = '${identifier}') AND u.deleted_at IS NULL LIMIT 1`,
+    );
+    return rows[0] ?? null;
+  }
+
+  // 安全基线：参数化查询
   const [rows] = await getPool().query(
     `${USER_SELECT} WHERE (u.username = ? OR u.email = ?) AND u.deleted_at IS NULL LIMIT 1`,
     [identifier, identifier],

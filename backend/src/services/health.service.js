@@ -18,6 +18,7 @@ export async function getHealthSnapshot() {
     version: config.app.version,
     env: config.app.env,
     apiPrefix: config.app.apiPrefix,
+    vulnMode: config.vuln.mode,
     uptimeSeconds: Math.round(process.uptime()),
     checks: { database },
   };
