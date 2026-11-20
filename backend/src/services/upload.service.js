@@ -69,22 +69,29 @@ export async function registerUpload({ file, user, ip, userAgent }) {
   const absolutePath = file.path;
 
   try {
-    const detected = detectMimeType(await readHeader(absolutePath, 12));
-    const allowed = config.upload.allowedMime;
+    let mimeType;
+    if (config.vuln.mode === 'VULN-04') {
+      // ──【刻意漏洞 VULN-04】不安全文件上传：跳过 magic bytes 与类型一致性校验 ──
+      mimeType = file.mimetype || 'application/octet-stream';
+    } else {
+      const detected = detectMimeType(await readHeader(absolutePath, 12));
+      const allowed = config.upload.allowedMime;
 
-    if (!detected || !allowed.includes(detected)) {
-      throw new AppError('UNSUPPORTED_MEDIA_TYPE', `仅支持以下图片类型：${allowed.join(', ')}`);
-    }
-    if (detected !== file.mimetype) {
-      throw new AppError('UNSUPPORTED_MEDIA_TYPE', '文件内容与声明的 Content-Type 不一致');
+      if (!detected || !allowed.includes(detected)) {
+        throw new AppError('UNSUPPORTED_MEDIA_TYPE', `仅支持以下图片类型：${allowed.join(', ')}`);
+      }
+      if (detected !== file.mimetype) {
+        throw new AppError('UNSUPPORTED_MEDIA_TYPE', '文件内容与声明的 Content-Type 不一致');
+      }
+
+      const expectedExtension = extensionForMime(detected);
+      if (!path.basename(absolutePath).endsWith(expectedExtension)) {
+        throw new AppError('UNSUPPORTED_MEDIA_TYPE', '落盘文件名与检测到的文件类型不一致');
+      }
+      mimeType = detected;
     }
 
     const storedName = path.basename(absolutePath);
-    const expectedExtension = extensionForMime(detected);
-    if (!storedName.endsWith(expectedExtension)) {
-      throw new AppError('UNSUPPORTED_MEDIA_TYPE', '落盘文件名与检测到的文件类型不一致');
-    }
-
     const content = await fs.readFile(absolutePath);
     const sha256 = crypto.createHash('sha256').update(content).digest('hex');
     const now = new Date();
@@ -93,7 +100,7 @@ export async function registerUpload({ file, user, ip, userAgent }) {
       owner_id: Number(user.id),
       original_name: sanitizeOriginalName(file.originalname),
       stored_name: storedName,
-      mime_type: detected,
+      mime_type: mimeType,
       size_bytes: content.length,
       sha256,
       storage_path: storedName,
@@ -110,7 +117,7 @@ export async function registerUpload({ file, user, ip, userAgent }) {
       result: 'success',
       ip,
       userAgent,
-      detail: { mimeType: detected, sizeBytes: content.length },
+      detail: { mimeType: mimeType, sizeBytes: content.length },
     });
 
     return toPublicFile(created);

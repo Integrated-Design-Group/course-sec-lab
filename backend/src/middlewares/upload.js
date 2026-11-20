@@ -25,12 +25,22 @@ const storage = multer.diskStorage({
     callback(null, config.upload.dir);
   },
   filename: (req, file, callback) => {
+    // ──【刻意漏洞 VULN-04】保留原始文件名（basename 防真实路径穿越）──
+    if (config.vuln.mode === 'VULN-04') {
+      const original = path.basename(String(file.originalname || 'upload'));
+      return callback(null, original);
+    }
     const extension = ALLOWED_EXTENSIONS.get(file.mimetype)?.[0] ?? '.bin';
     callback(null, `${Date.now()}-${randomUUID()}${extension}`);
   },
 });
 
 function fileFilter(req, file, callback) {
+  // ──【刻意漏洞 VULN-04】不安全文件上传：跳过类型/扩展名白名单 ──
+  if (config.vuln.mode === 'VULN-04') {
+    return callback(null, true);
+  }
+
   if (!config.upload.allowedMime.includes(file.mimetype)) {
     return callback(
       new AppError('UNSUPPORTED_MEDIA_TYPE', `仅支持以下图片类型：${config.upload.allowedMime.join(', ')}`),
