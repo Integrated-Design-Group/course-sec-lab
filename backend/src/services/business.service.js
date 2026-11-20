@@ -10,6 +10,7 @@
  *  - 所有写操作写审计日志（不含密码/token）
  */
 import { repositories } from '../repositories/index.js';
+import { config } from '../config/index.js';
 import {
   ITEM_STATUS,
   ITEM_STATUS_TRANSITIONS,
@@ -23,6 +24,23 @@ import { archiveOrphanedFile } from './upload.service.js';
 
 function isAdmin(actor) {
   return actor?.role === 'admin';
+}
+
+// ──【刻意漏洞 VULN-02 的安全侧】存储型 XSS 防护 ──
+// 安全基线：把描述中的 HTML 特殊字符转义；VULN_MODE=VULN-02 时跳过转义（刻意保留原始 HTML）。
+function escapeHtmlForDescription(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeDescription(description) {
+  if (description == null || description === '') return description;
+  if (config.vuln.mode === 'VULN-02') return description;
+  return escapeHtmlForDescription(description);
 }
 
 function assertCanOperate(actor, row) {
@@ -92,7 +110,7 @@ export async function createBusinessItem({ input, actor, ip, userAgent }) {
     category: input.category,
     condition_level: input.conditionLevel,
     price: input.price,
-    description: input.description ? input.description : null,
+    description: sanitizeDescription(input.description ? input.description : null),
     status: ITEM_STATUS.DRAFT,
     cover_file_id: input.coverFileId ?? null,
     created_at: now,
@@ -174,7 +192,7 @@ export async function updateBusinessItem({ id, input, actor, ip, userAgent }) {
     changedFields.push('price');
   }
   if (input.description !== undefined) {
-    columns.description = input.description === '' ? null : input.description;
+    columns.description = sanitizeDescription(input.description === '' ? null : input.description);
     changedFields.push('description');
   }
   if (input.status !== undefined) {

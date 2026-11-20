@@ -184,7 +184,12 @@ export function BusinessDetailPage() {
           </div>
 
           <h3>描述</h3>
-          <p className={item.description ? 'pre-wrap' : 'muted'}>{item.description || '暂无描述'}</p>
+          {item.description ? (
+            // 【刻意漏洞 VULN-02】不安全渲染：直接把描述当作 HTML 注入 DOM
+            <p className="pre-wrap" dangerouslySetInnerHTML={{ __html: item.description }} />
+          ) : (
+            <p className="muted">暂无描述</p>
+          )}
 
           <p className="muted">
             {canEdit
