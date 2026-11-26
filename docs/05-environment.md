@@ -52,7 +52,9 @@
 | Compose 全栈 | ✅ 构建 / 启动 / 健康检查 / 登录 / Nginx 反代通过 |
 | 浏览器端到端 | ✅ Edge 157 无头模式 11 项通过 |
 
-> **M1 更新（2026-11-18，内存驱动实测）**：后端 `node:test` 扩至 **44 项**（health 4 / auth 6 / business 10 / business-write 9 / upload 7 / admin 8）；冒烟 **6 项**、API 契约 **11 项**；前端生产构建 **57 模块**；框架自检 **26 项**。MySQL 下的 `002` 迁移与种子**未复验**，原因见 [02 数据库](./02-database.md) 第 7 节。
+> **M1 更新（2026-11-18，内存驱动实测）**：后端 `node:test` 扩至 **44 项**（health 4 / auth 6 / business 10 / business-write 9 / upload 7 / admin 8）；冒烟 **6 项**、API 契约 **11 项**；前端生产构建 **57 模块**；框架自检 **26 项**。
+>
+> **2026-11-26 补验**：`001`+`002` 迁移与种子已在独立 MySQL 8.4.4 容器通过（`users=2 business_items=11`）；项目 Compose 全栈未在本次重跑。
 
 > 上表只记录事实。未验证项（公网部署、HTTPS、漏洞验证、性能）仍不得写成“通过”。
 
@@ -84,6 +86,7 @@
 | 前端构建 | `npm --prefix frontend run build` | 产物 `frontend/dist` |
 | 构建确认 | `npm --prefix frontend run preview` | 预览构建产物，端口 4173 |
 | 迁移 / 种子 / 重置 | `npm --prefix backend run db:migrate` / `db:seed` / `db:reset` | 仅 `DB_DRIVER=mysql` |
+| 测试账号 | `npm --prefix backend run db:test-account` | 需 `TEST_ACCOUNT_USERNAME`/`TEST_ACCOUNT_PASSWORD`，见 [15](15-vuln-test-accounts.md) |
 | 演示前一键重置 | `bash scripts/seed.sh` | reset → migrate → seed |
 | 框架自检 | `npm run check` | 目录/JSON/YAML/文档/密钥扫描 |
 | 环境自检 | `node scripts/check-env.mjs [--db]` | `--db` 额外探测 MySQL 端口 |
@@ -135,6 +138,7 @@
 | `DB_POOL_MIN` | `2` | 否 | 连接池下限 |
 | `DB_POOL_MAX` | `10` | 否 | 连接池上限 |
 | `DB_CONNECT_TIMEOUT_MS` | `10000` | 否 | 连接超时 |
+| `DB_PUBLISH_PORT` | `3306` | 否 | 仅 `docker-compose.dev.yml` 使用；映射到 `127.0.0.1` |
 
 ### 5.3 认证
 
@@ -169,6 +173,9 @@
 | --- | --- | --- |
 | `VITE_API_BASE_URL` | `/api/v1` | 前端请求前缀；Docker 构建时作为 ARG 注入 |
 | `VITE_APP_TITLE` | 课程安全靶场… | 页面标题 |
+| `VITE_DEV_PROXY_TARGET` | `http://127.0.0.1:3000` | 仅开发期 Vite 代理目标 |
+
+> `VULN_MODE` **不属于 main 的运行时配置**；它只存在于 `vuln/*` 分支的靶场实例，默认 `off`，见 [08 漏洞设计](./08-vuln-design.md)。
 
 ## 6. 两种运行模式
 

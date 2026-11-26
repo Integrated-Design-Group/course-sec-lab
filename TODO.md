@@ -55,13 +55,13 @@
 | 任务组 | 范围 | 任务数 | 已完成 | 当前状态 |
 | --- | --- | :---: | :---: | --- |
 | A 业务模块开发 | 登录/角色、CRUD、联调、上传、种子 | 11 | 11（含 2 项框架阶段） | 完成（M1，2026-11-18） |
-| B 漏洞工作 | 设计评审、VULN-01～05、验证、清单 | 12 | 6（B-01 + B-02～B-06） | 进行中（验证未开始） |
+| B 漏洞工作 | 设计评审、VULN-01～05、验证、清单 | 12 | 9（B-01～B-08、B-10） | B-09/B-11/B-12 待部署与验证 |
 | C 云部署 | 资源、安全组、编排、域名、回滚 | 9 | 0 | 待认领 |
 | D 文档 | 部署/漏洞/验证/访问/隔离/评审 | 7 | 0 | 待认领 |
 | E 测试支持 | 扫描对接、预约、日志、下线、复盘 | 7 | 0 | 待认领 |
-| **合计** | - | **46** | **17** | - |
+| **合计** | - | **46** | **20** | - |
 
-> 勾选后请同步更新本表的“已完成”数字（同一个 PR）。M1 与 B-01 为本地完成、**待提 PR**，合并后请补充 PR 链接。
+> 勾选后请同步更新本表的“已完成”数字（同一个 PR）。A-01～A-10、B-01 已随 #2 合并；B-02～B-06 是远端 `vuln/*` 独立分支，按规范不合并 main；B-07/B-08/B-10 为本地完成、**待提 PR**。
 
 ---
 
@@ -81,57 +81,57 @@
   - 建议负责人 / 角色：后端开发（1 人）
   - 依赖：A-00
   - 完成定义：管理接口使用 `requireRole('admin')`；学生只能操作自己的条目；401/403 行为与 [docs/03](docs/03-api.md) 一致；补充接口测试
-  - 完成证据：`backend/src/middlewares/auth.js`（requireRole / optionalAuthenticate）、`backend/src/routes/admin.routes.js`、`backend/tests/admin.test.mjs`；`npm --prefix backend test` 44 项通过；**待提 PR**
+  - 完成证据：`backend/src/middlewares/auth.js`（requireRole / optionalAuthenticate）、`backend/src/routes/admin.routes.js`、`backend/tests/admin.test.mjs`；`npm --prefix backend test` 44 项通过；已合并 #2
   - 完成人 / 日期：Harness / 2026-11-18
-  - 状态：完成（本地完成，待提 PR）
+  - 状态：完成（已合并 #2）
 
 - [x] **A-02 业务条目创建接口（POST /business-items）**
   - 建议负责人 / 角色：后端开发
   - 依赖：A-01
   - 完成定义：入参校验（标题/作者/价格/分类/成色）、归属当前用户、初始状态 `draft`、写审计、替换 501、补充测试
-  - 完成证据：`backend/src/services/business.service.js`、`backend/src/controllers/business.controller.js`、`backend/src/repositories/{mysql,memory}/`；`backend/tests/business-write.test.mjs`；初始状态固定 draft、`coverFileId` 归属校验；**待提 PR**
+  - 完成证据：`backend/src/services/business.service.js`、`backend/src/controllers/business.controller.js`、`backend/src/repositories/{mysql,memory}/`；`backend/tests/business-write.test.mjs`；初始状态固定 draft、`coverFileId` 归属校验；已合并 #2
   - 完成人 / 日期：Harness / 2026-11-18
-  - 状态：完成（本地完成，待提 PR）
+  - 状态：完成（已合并 #2）
 
 - [x] **A-03 业务条目编辑与删除（PATCH/DELETE）**
   - 建议负责人 / 角色：后端开发
   - 依赖：A-01、A-02
   - 完成定义：归属校验（本人或 admin）、软删除、状态流转合法、审计、冲突处理、补充测试
-  - 完成证据：状态机 `ITEM_STATUS_TRANSITIONS`、软删除 + 孤儿封面归档、`expectedUpdatedAt` 乐观锁（409）、审计 `business_item.update/delete`；`backend/tests/business-write.test.mjs` 9 项通过；**待提 PR**
+  - 完成证据：状态机 `ITEM_STATUS_TRANSITIONS`、软删除 + 孤儿封面归档、`expectedUpdatedAt` 乐观锁（409）、审计 `business_item.update/delete`；`backend/tests/business-write.test.mjs` 9 项通过；已合并 #2
   - 完成人 / 日期：Harness / 2026-11-18
-  - 状态：完成（本地完成，待提 PR）
+  - 状态：完成（已合并 #2）
 
 - [x] **A-04 列表与详情能力增强**
   - 建议负责人 / 角色：后端开发
   - 依赖：A-02
   - 完成定义：支持“我的条目”过滤、分页稳定排序、必要的索引补充（新迁移文件）、文档同步
-  - 完成证据：`GET /business-items?mine=true`（可选认证，未登录 401）；固定 `created_at DESC, id DESC`；`db/migrations/002_m1_business_indexes.sql` 新增 `idx_business_items_owner_status_created`；`backend/tests/business.test.mjs` 10 项通过；**待提 PR**
+  - 完成证据：`GET /business-items?mine=true`（可选认证，未登录 401）；固定 `created_at DESC, id DESC`；`db/migrations/002_m1_business_indexes.sql` 新增 `idx_business_items_owner_status_created`；`backend/tests/business.test.mjs` 10 项通过；已合并 #2
   - 完成人 / 日期：Harness / 2026-11-18
-  - 状态：完成（本地完成，待提 PR）
+  - 状态：完成（已合并 #2）
 
 - [x] **A-05 前端条目表单与前后端联调**
   - 建议负责人 / 角色：前端开发
   - 依赖：A-02、A-03
   - 完成定义：新建/编辑表单、字段级错误提示、loading/error/empty 三态、登录失效跳转、与 API 契约字段一致
-  - 完成证据：`frontend/src/pages/BusinessFormPage.jsx`、`frontend/src/pages/BusinessListPage.jsx`、`BusinessDetailPage.jsx`、`api/business.js`；路由 `/business/new`、`/business/:id/edit`；`npm --prefix frontend run build` 57 模块通过；**待提 PR**
+  - 完成证据：`frontend/src/pages/BusinessFormPage.jsx`、`frontend/src/pages/BusinessListPage.jsx`、`BusinessDetailPage.jsx`、`api/business.js`；路由 `/business/new`、`/business/:id/edit`；`npm --prefix frontend run build` 57 模块通过；已合并 #2
   - 完成人 / 日期：Harness / 2026-11-18
-  - 状态：完成（本地完成，待提 PR）
+  - 状态：完成（已合并 #2）
 
 - [x] **A-06 上传与封面关联**
   - 建议负责人 / 角色：全栈（后端为主）
   - 依赖：A-02
   - 完成定义：条目可绑定 `cover_file_id`；封面通过受控鉴权接口读取（不公开上传目录）；替换/删除时处理孤儿文件
-  - 完成证据：`backend/src/services/upload.service.js#readUploadForUser`（本人/管理员/条目封面引用）、`archiveOrphanedFile`；`GET /uploads/:id` 二进制流 + 路径逃逸防护；`backend/tests/upload.test.mjs` 7 项、`frontend` 详情页 Blob 渲染；**待提 PR**
+  - 完成证据：`backend/src/services/upload.service.js#readUploadForUser`（本人/管理员/条目封面引用）、`archiveOrphanedFile`；`GET /uploads/:id` 二进制流 + 路径逃逸防护；`backend/tests/upload.test.mjs` 7 项、`frontend` 详情页 Blob 渲染；已合并 #2
   - 完成人 / 日期：Harness / 2026-11-18
-  - 状态：完成（本地完成，待提 PR）
+  - 状态：完成（已合并 #2）
 
 - [x] **A-07 管理后台基础能力**
   - 建议负责人 / 角色：全栈
   - 依赖：A-01
   - 完成定义：用户列表/停用、条目审核、审计日志检索页；全部接口后端鉴权，前端仅做可见性
-  - 完成证据：`backend/src/routes/admin.routes.js`、`services/admin.service.js`、`controllers/admin.controller.js`；`frontend/src/pages/AdminPage.jsx` 三面板；`backend/tests/admin.test.mjs` 8 项通过；审计动作 `admin.user.status`；**待提 PR**
+  - 完成证据：`backend/src/routes/admin.routes.js`、`services/admin.service.js`、`controllers/admin.controller.js`；`frontend/src/pages/AdminPage.jsx` 三面板；`backend/tests/admin.test.mjs` 8 项通过；审计动作 `admin.user.status`；已合并 #2
   - 完成人 / 日期：Harness / 2026-11-18
-  - 状态：完成（本地完成，待提 PR）
+  - 状态：完成（已合并 #2）
 
 - [x] **A-08 种子数据与重置脚本（框架基础版）**
   - 建议负责人 / 角色：框架负责人（已完成）
@@ -145,17 +145,17 @@
   - 建议负责人 / 角色：后端开发 + 文档负责人
   - 依赖：A-02、A-03、A-08
   - 完成定义：覆盖各状态的演示数据、分页/过滤样例、重置后仍可重复演示；更新种子说明
-  - 完成证据：`db/seeds/002_seed_m1_demo.sql` 新增 8 条（id 4～11），状态覆盖 published/reserved/sold/draft/archived，所有者混合 admin/student；内存种子同步；docs/02 §6 已更新；`db:seed` 预期 `roles=2 users=2 business_items=11`；**待提 PR**
+  - 完成证据：`db/seeds/002_seed_m1_demo.sql` 新增 8 条（id 4～11），状态覆盖 published/reserved/sold/draft/archived，所有者混合 admin/student；内存种子同步；docs/02 §6 已更新；`db:seed` 预期 `roles=2 users=2 business_items=11`；已合并 #2
   - 完成人 / 日期：Harness / 2026-11-18
-  - 状态：完成（本地完成，待提 PR）
+  - 状态：完成（已合并 #2）
 
 - [x] **A-10 业务测试与接口文档同步**
   - 建议负责人 / 角色：测试/后端
   - 依赖：A-02、A-03、A-05
   - 完成定义：新增写接口的校验/权限/审计测试；`tests/api` 契约同步；docs/03 示例更新
-  - 完成证据：后端 44 项、`tests/smoke` 6 项、`tests/api` 11 项全部通过（内存驱动）；`docs/03-api.md` 全量重写（15 个端点、状态机、受控读取、管理端）；**待提 PR**
+  - 完成证据：后端 44 项、`tests/smoke` 6 项、`tests/api` 11 项全部通过（内存驱动）；`docs/03-api.md` 全量重写（15 个端点、状态机、受控读取、管理端）；已合并 #2
   - 完成人 / 日期：Harness / 2026-11-18
-  - 状态：完成（本地完成，待提 PR）
+  - 状态：完成（已合并 #2）
 
 ### B. 漏洞工作（仅课程授权环境）
 
@@ -165,9 +165,9 @@
   - 建议负责人 / 角色：漏洞负责人 + 指导教师
   - 依赖：A-00（框架验收通过）
   - 完成定义：5 个漏洞的类别/端点/前置/影响/修复方向/验证用例完成评审；状态从“草案”改为“已设计”；冻结编号
-  - 完成证据：`docs/08-vuln-design.md` 新增 §1.1 设计评审记录，5 个 VULN 状态改为“已设计（未实现）”，端点/用例编号冻结；`docs/09-verify-template.md` 冻结 5 个 `VERIFY-VULN-0x-01`；**main 代码无漏洞改动**；**待提 PR**
+  - 完成证据：`docs/08-vuln-design.md` 新增 §1.1 设计评审记录，5 个 VULN 状态改为“已设计”，后续 B-02～B-06 在 vuln/* 分支实现，端点/用例编号冻结；`docs/09-verify-template.md` 冻结 5 个 `VERIFY-VULN-0x-01`；**main 代码无漏洞改动**；已合并 #2
   - 完成人 / 日期：Harness / 2026-11-18
-  - 状态：完成（本地完成，待提 PR）
+  - 状态：完成（已合并 #2）
 
 - [x] **B-02 VULN-01 实现（独立分支 + 开关）**
   - 建议负责人 / 角色：漏洞开发
@@ -175,7 +175,7 @@
   - 完成定义：`vuln/VULN-01` 分支；默认关闭；启动日志标识模式；不修改 `main` 行为；完成自测
   - 完成证据：`vuln/VULN-01` 分支 commit `ac2d403`；`config.vuln.mode` 开关默认 `off`；`findByUsernameOrEmail` 注入分支；自测：off 参数化拦截，VULN-01 布尔真/假条件响应差异；`npm --prefix backend test` 44 项通过；已 push
   - 完成人 / 日期：Harness / 2026-11-20
-  - 状态：完成（待提 PR）
+  - 状态：完成（独立分支实现，不合并 main）
 
 - [x] **B-03 VULN-02 实现（独立分支 + 开关）**
   - 建议负责人 / 角色：漏洞开发
@@ -183,7 +183,7 @@
   - 完成定义：同 B-02，并确保仅在靶场实例生效
   - 完成证据：`vuln/VULN-02` 分支 commit `d8955f5`；描述字段 `VULN_MODE=VULN-02` 时跳过 HTML 转义、详情页 `dangerouslySetInnerHTML` 渲染；自测：off 转义、VULN-02 原样存储；后端 44 项 + 前端构建通过；已 push
   - 完成人 / 日期：Harness / 2026-11-20
-  - 状态：完成（待提 PR）
+  - 状态：完成（独立分支实现，不合并 main）
 
 - [x] **B-04 VULN-03 实现（独立分支 + 开关）**
   - 建议负责人 / 角色：漏洞开发
@@ -191,7 +191,7 @@
   - 完成定义：同 B-02；准备 A/B 两个测试账号与各自数据
   - 完成证据：`vuln/VULN-03` 分支 commit `ddb46b8`；`assertCanOperate` 在 `VULN_MODE=VULN-03` 时跳过归属校验；自测：off 403、VULN-03 student 篡改 admin 条目成功；44 项测试通过；已 push
   - 完成人 / 日期：Harness / 2026-11-20
-  - 状态：完成（待提 PR）
+  - 状态：完成（独立分支实现，不合并 main）
 
 - [x] **B-05 VULN-04 实现（独立分支 + 开关）**
   - 建议负责人 / 角色：漏洞开发
@@ -199,7 +199,7 @@
   - 完成定义：同 B-02；明确“刻意错误配置”的边界与恢复方式
   - 完成证据：`vuln/VULN-04` 分支 commit `e14dbce`；`VULN_MODE=VULN-04` 时跳过 multer 白名单 + magic bytes + 随机命名，按原始文件名落盘；自测：off 415、VULN-04 接受 evil.html；44 项测试通过；已 push
   - 完成人 / 日期：Harness / 2026-11-20
-  - 状态：完成（待提 PR）
+  - 状态：完成（独立分支实现，不合并 main）
 
 - [x] **B-06 VULN-05 实现（独立分支 + 开关）**
   - 建议负责人 / 角色：漏洞开发
@@ -207,39 +207,39 @@
   - 完成定义：同 B-02；验证后能恢复到安全基线
   - 完成证据：`vuln/VULN-05` 分支 commit `6297129`；`VULN_MODE=VULN-05` 时跳过登录失败限流；自测：off 第 11 次 `RATE_LIMITED`、VULN-05 无限次尝试；44 项测试通过；已 push
   - 完成人 / 日期：Harness / 2026-11-20
-  - 状态：完成（待提 PR）
+  - 状态：完成（独立分支实现，不合并 main）
 
-- [ ] **B-07 测试账号与前置数据准备**
+- [x] **B-07 测试账号与前置数据准备**
   - 建议负责人 / 角色：测试支持
   - 依赖：B-01
   - 完成定义：按角色准备专用测试账号（一人一号）、种子/造数脚本、数据字典；密码走加密渠道，不入库
-  - 完成证据：完成证据：docs/15-vuln-test-accounts.md；预置账号清单、造数脚本引用、账号登记表；密码走加密渠道不入库；已 push
-  - 完成人 / 日期：DLY0211/ 2026-11-26
-  - 状态：完成（待提 PR）
+  - 完成证据：`backend/scripts/create-test-account.mjs`（`db:test-account`，密码只从 `TEST_ACCOUNT_PASSWORD` 读取，不落库/不打印）、`docs/15-vuln-test-accounts.md`；本地 MySQL 8.4 实测：创建 `stuB` → 登录 200 → 停用成功；密码未写入仓库；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-26
+  - 状态：完成（本地完成，待提 PR）
 
-- [ ] **B-08 逐个漏洞编写验证方法**
+- [x] **B-08 逐个漏洞编写验证方法**
   - 建议负责人 / 角色：漏洞负责人 + 测试支持
   - 依赖：B-02～B-06
   - 完成定义：每个 VULN 一份 `VERIFY-*`，含前置、步骤、判定、证据、清理；不含可直接复用的攻击载荷
-  - 完成证据：完成证据：docs/VERIFY-VULN-01-01.md,docs/VERIFY-VULN-02-01.md,docs/VERIFY-VULN-03-01.md,docs/VERIFY-VULN-04-01.md,docs/VERIFY-VULN-05-01.md；每个VULN一份VERIFY文档，含前置、步骤、判定、证据规划、清理；不含可直接复用攻击载荷；阻塞待B09复现；已 push
-  - 完成人 / 日期：DLY0211/ 2026-11-26
-  - 状态：完成（待提 PR）
+  - 完成证据：`docs/VERIFY-VULN-01-01.md`～`docs/VERIFY-VULN-05-01.md`；账号命名/链接已与 `docs/15` 对齐；每份含前置、步骤、判定、证据规划、清理；实际复现留给 B-09；**待提 PR**
+  - 完成人 / 日期：DLY0211（复核 Harness）/ 2026-11-26
+  - 状态：完成（本地完成，待提 PR）
 
 - [ ] **B-09 逐项复现与证据归档**
   - 建议负责人 / 角色：验证执行人
   - 依赖：B-08、C-05
   - 完成定义：在授权靶场逐项复现，证据脱敏归档；记录时间（UTC）、模式、数据版本
-  - 完成证据：待补充（证据目录说明 / 验证记录链接 / 截图（脱敏））
+  - 完成证据：待补充（B-07/B-08/B-10 已完成；等待 C-05 授权靶场实例）
   - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 状态：阻塞（C-05 未完成；解除条件：独立靶场实例可访问）
 
-- [ ] **B-10 隔离边界检查**
+- [x] **B-10 隔离边界检查**
   - 建议负责人 / 角色：安全评审
   - 依赖：B-02～B-06
   - 完成定义：确认漏洞仅存在于 `vuln/*` 分支与独立实例；`main` 无漏洞；开关默认关闭；默认配置安全
-  - 完成证据：完成证据：docs/14-vuln-branch-isolation-check.md；核验漏洞仅存在vuln/*分支、main无漏洞、VULN_MODE默认off；main分支启动验证无漏洞告警；vuln分支默认关闭待B09采集日志；已 push
-  - 完成人 / 日期：DLY0211 / 2026-11-26
-  - 状态：完成（待提 PR）
+  - 完成证据：`docs/14-vuln-branch-isolation-check.md`（文件名改为 ASCII）；`main` 无 `VULN_MODE`/`dangerouslySetInnerHTML` 等漏洞代码；5 个分支 commit 与默认 `off` 已核验；VULN-01～05 本地 30/30 检查通过（VULN-01/04 部分有效）；完整检验报告留在仓库外 `B10-vuln-verification-report.md`（未提交）；**待提 PR**
+  - 完成人 / 日期：Harness（复核 DLY0211 初稿）/ 2026-11-26
+  - 状态：完成（本地独立实例完成，待提 PR）
 
 - [ ] **B-11 漏洞清单定稿**
   - 建议负责人 / 角色：漏洞负责人
@@ -247,7 +247,7 @@
   - 完成定义：docs/08 状态表更新为“已验证”；补充风险等级、影响、修复建议、验证用例编号
   - 完成证据：待补充（PR / docs/08 diff / 评审签字）
   - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 状态：待认领（B-10 已完成；等待 B-09 复现结果）
 
 - [ ] **B-12 漏洞回归、关闭与下线**
   - 建议负责人 / 角色：漏洞负责人 + 部署负责人
@@ -255,7 +255,7 @@
   - 完成定义：修复后按同一用例回归；靶场实例销毁；分支归档；docs/08 标记“已下线”
   - 完成证据：待补充（回归记录 / 销毁证明 / docs/08 更新）
   - 完成人 / 日期：— / —
-  - 状态：待认领
+  - 状态：待认领（等待 B-11/E-06）
 
 ### C. 云部署
 
@@ -476,5 +476,6 @@
 | 日期 | 变更 | 操作人 | PR |
 | --- | --- | --- | --- |
 | 2026-11-13 | 创建 TODO 清单（框架阶段） | 框架搭建 Agent | 待合并 |
-| 2026-11-18 | 完成 M1（A-01～A-07、A-09、A-10）与 B-01 设计冻结；同步文档、种子与测试 | Harness | 待提 PR |
-| 2026-11-20 | 完成 B-02～B-06（VULN-01～05 独立分支实现 + `VULN_MODE` 开关），5 个分支已 push 远程 | Harness | 待提 PR |
+| 2026-11-18 | 完成 M1（A-01～A-07、A-09、A-10）与 B-01 设计冻结；同步文档、种子与测试 | Harness | #2（已合并） |
+| 2026-11-20 | 完成 B-02～B-06（VULN-01～05 独立分支实现 + `VULN_MODE` 开关），5 个分支已 push 远程 | Harness | 不合并 main（独立分支） |
+| 2026-11-26 | B-07 测试账号脚本 + B-08 验证方法校正 + B-10 五漏洞本地检验与文档校准 | Harness | 待提 PR |

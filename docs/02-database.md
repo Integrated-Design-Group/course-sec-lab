@@ -78,7 +78,7 @@ erDiagram
 | `users` | 账号 | 种子 |
 | `business_items` | 业务条目（教材/笔记） | 种子 + 写接口 |
 | `uploaded_files` | 上传文件元数据 | 上传接口 |
-| `audit_logs` | 审计日志 | 登录/退出/上传 |
+| `audit_logs` | 审计日志 | 登录/退出/上传/写操作 |
 
 ## 4. 字段说明
 
@@ -188,6 +188,7 @@ erDiagram
 | `uploaded_files` | `idx_uploaded_files_owner_created` | INDEX(owner_id, created_at) | 用户文件列表 |
 | `audit_logs` | `idx_audit_logs_actor_created` | INDEX(actor_id, created_at) | 按人审计 |
 | `audit_logs` | `idx_audit_logs_action_created` | INDEX(action, created_at) | 按动作审计 |
+| `audit_logs` | `idx_audit_logs_created` | INDEX(created_at) | 按时间检索审计 |
 | `business_items` | `idx_business_items_owner_status_created` | INDEX(owner_id, status, created_at) | “我的条目 + 状态过滤”（迁移 002） |
 | `audit_logs` | `idx_audit_logs_result_created` | INDEX(result, created_at) | 管理端按结果检索审计（迁移 002） |
 
@@ -217,13 +218,16 @@ erDiagram
 
 **部署到公网前必须**：修改演示账号密码或停用账号，并删除种子里的演示业务数据（见 [04-deploy.md](./04-deploy.md) 上线检查清单）。
 
+> **课程测试账号**：默认种子只含 `admin`/`student`；`stuB` 等一人一号测试账号由 [15-vuln-test-accounts.md](./15-vuln-test-accounts.md) 的脚本按需创建，密码不写入种子。
+
 ## 7. 迁移与重置
 
 > **验证记录**：
 >
 > - **2026-11-13（框架阶段，MySQL 8.4.4 容器实测）**：`001_init_schema.sql` 创建 6 张表；`001_seed_base.sql` 写入 `roles=2 users=2 business_items=3`；`reset → migrate → seed` 可重复执行并重新登录；宿主机开发模式（`127.0.0.1:3306`）同样通过。
 > - **2026-11-18（M1，内存驱动实测）**：新增 `002_m1_business_indexes.sql` 与 `002_seed_m1_demo.sql`；内存种子同步扩展为 11 条条目。后端 44 项测试、冒烟 6 项、契约 11 项通过。
-> - **未验证及原因**：MySQL 下的 002 迁移与 002 种子**未在本环境复验**——本次执行环境未启动 MySQL 容器（只读/沙箱限制与耗时考虑），仅通过 SQL 静态审阅与内存驱动等价数据验证。需在本地按 `docs/13-m1-delivery-runbook.md` 第 2.4 节执行一次 `db:reset → db:migrate → db:seed` 复核。
+> - **2026-11-26（MySQL 8.4.4 独立容器复验）**：`001` + `002` 两个迁移均成功应用；`db:seed` 输出 `roles=2 users=2 business_items=11`；`002` 的两个索引随迁移创建。测试账号 `stuB` 由 `backend/scripts/create-test-account.mjs` 另行创建，**不进入默认种子**，因此默认 `users=2` 不变。详见 [15-vuln-test-accounts.md](./15-vuln-test-accounts.md)。
+> - **未验证及原因**：未在项目 Compose 编排内复跑 2026-11-26 的复验；该次使用独立 MySQL 8.4.4 容器与分支 worktree，验证了迁移/种子本身，但未覆盖 Compose 的卷/网络/健康检查组合。云上数据库仍未部署。
 
 ### 7.1 首次建库（空库 → 可运行）
 

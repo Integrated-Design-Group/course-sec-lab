@@ -73,13 +73,13 @@
 
 ### 5.3 仍未做
 
-- **不实现任何漏洞**：没有 SQL 注入、XSS、越权、不安全文件上传、弱认证等**可利用**缺陷；VULN-01～VULN-05 仅完成设计冻结
-- 不创建云服务器、不绑定域名、不配置真实安全组、不执行 `git push`
+- **不实现 main 分支漏洞**：`main` 没有 SQL 注入、XSS、越权、不安全文件上传、弱认证等**可利用**缺陷；VULN-01～VULN-05 已在独立 `vuln/*` 分支实现，默认 `VULN_MODE=off`，不合并 main。
+- 不创建云服务器、不绑定域名、不配置真实安全组；本次文档改动不推送到远端
 - 不写入真实密码、云密钥、证书私钥或任何敏感数据
 - 不做性能压测、不做多副本高可用（单机课程版）
 - 已知边界：草稿条目当前对游客可见；上传文件不提供公开 URL；JWT 撤销表与限流为进程内实现
 
-> 漏洞的**设计**在 [08-vuln-design.md](./08-vuln-design.md) 中已冻结（状态“已设计”），实现必须留到独立分支、独立环境，并遵循 [07-security-isolation.md](./07-security-isolation.md)。
+> 漏洞的**设计**在 [08-vuln-design.md](./08-vuln-design.md) 中已冻结；B-02～B-06 已在 `vuln/*` 分支实现，B-10 完成本地隔离/有效性检查；B-09 仍需在授权独立实例复现。
 
 ## 6. 阶段划分与交付物
 
@@ -87,7 +87,7 @@
 | --- | --- | --- | --- |
 | M0 框架 | 骨架 / 契约 / 最小链路 | ✅ 已完成 | 本仓库全部文档与代码骨架 |
 | M1 业务 | 完成条目 CRUD、权限校验、审计、封面、管理端 | ✅ 已完成（2026-11-18） | A-01～A-07、A-09、A-10 |
-| M2 漏洞 | 按 VULN-01～05 实现并隔离 | ⏳ 设计已冻结，实现未开始 | 漏洞分支 + 开关 |
+| M2 漏洞 | 按 VULN-01～05 实现并隔离 | ✅ 已实现（vuln/*，默认 off）；B-09 待授权实例验证 | 漏洞分支 + 开关 + B-10 检查 |
 | M3 部署 | 独立云资源部署与公网访问 | ⏳ 未开始 | 部署记录、访问地址 |
 | M4 验证 | 验证报告、漏洞清单、复现步骤 | ⏳ 未开始 | 09 号文档实例 |
 
@@ -110,9 +110,15 @@
 | [05-environment.md](./05-environment.md) | 版本锁定、端口、命令、日志、环境变量 |
 | [06-conventions.md](./06-conventions.md) | 分支、提交、PR、代码与文档规范 |
 | [07-security-isolation.md](./07-security-isolation.md) | 隔离与授权边界、下线流程 |
-| [08-vuln-design.md](./08-vuln-design.md) | 漏洞编号规则与清单（未实现） |
+| [08-vuln-design.md](./08-vuln-design.md) | 漏洞编号规则与清单（vuln/* 已实现，默认 off） |
 | [09-verify-template.md](./09-verify-template.md) | 验证方法与记录模板 |
 | [10-access.md](./10-access.md) | 访问登记、账号发放与回收（占位） |
+| [11-github-collaboration.md](./11-github-collaboration.md) | 分支、提交、PR、评审与冲突解决 |
+| [12-local-setup.md](./12-local-setup.md) | 从零本地启动与排错 |
+| [13-m1-delivery-runbook.md](./13-m1-delivery-runbook.md) | M1 测试与 PR 交付流程 |
+| [14-vuln-branch-isolation-check.md](./14-vuln-branch-isolation-check.md) | B-10 分支隔离与实现有效性检查 |
+| [15-vuln-test-accounts.md](./15-vuln-test-accounts.md) | 测试账号、造数脚本与数据字典 |
+| VERIFY-VULN-0x-01（5 份） | 各漏洞验证方法（B-09 执行） |
 | [framework-acceptance.md](./framework-acceptance.md) | M0 框架阶段人工验收基线 |
 
 ## 9. 安全与合规声明

@@ -139,7 +139,7 @@
 }
 ```
 
-排序约定：固定 `created_at DESC, id DESC`（审计日志固定 `id DESC`），当前不开放自定义排序。
+排序约定：业务条目列表固定 `created_at DESC, id DESC`；审计日志固定 `id DESC`；管理端用户列表固定 `u.id ASC`。当前不开放自定义排序。
 
 ## 6. 上传与文件读取
 
@@ -484,7 +484,7 @@ curl -sS -X POST http://127.0.0.1:3000/api/v1/uploads \
 
 **成功 200**：二进制流，响应头包含 `Content-Type`、`Content-Length`、`X-Content-Type-Options: nosniff`、`Cache-Control: private, max-age=60`。
 
-**失败**：`400 VALIDATION_ERROR`（id 非正整数）、`401 UNAUTHORIZED`、`403 FORBIDDEN`（无授权）、`404 NOT_FOUND`（文件不存在/已归档且无引用）。
+**失败**：`400 VALIDATION_ERROR`（id 非正整数）、`401 UNAUTHORIZED`、`403 FORBIDDEN`（无授权）、`404 NOT_FOUND`（文件内容不存在；非所有者/管理员且已归档且无引用）。
 
 > 前端不能用 `<img src="/api/v1/uploads/1">` 直接加载（无法带 Bearer Token），应通过 `fetch` + Blob URL 渲染，见 `frontend/src/api/business.js#fetchCoverBlob`。
 
@@ -576,11 +576,11 @@ curl -sS -X POST http://127.0.0.1:3000/api/v1/uploads \
 3. 同步更新 `backend/tests/`、`tests/api/` 中受影响断言。
 4. 前端 `api/` 目录同步调整，禁止在页面里直连未文档化接口。
 
-## 11. 未实现清单（M1 结束时的已知边界）
+## 11. 未实现清单（2026-11-26 已知边界）
 
 | 能力 | 状态 |
 | --- | --- |
-| VULN-01～VULN-05 漏洞实现 | 设计已冻结（B-01），代码未实现 |
+| VULN-01～VULN-05 漏洞实现 | `main` 未实现；`vuln/VULN-01`～`05` 独立分支已实现，默认 `VULN_MODE=off`；B-09 尚未在授权靶场复现 |
 | 公网部署 / 域名 / HTTPS | 未执行（需独立云资源） |
 | 草稿条目仅本人可见 | 未实现（当前读接口返回全部未删除条目） |
 | 刷新令牌 / 记住我 | 未实现 |
