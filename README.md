@@ -1,6 +1,6 @@
 # 课程 Web 安全靶场 · 校园二手教材交易平台
 
-> 状态：**M1 业务完成 / M2 漏洞分支就绪** · `main` 保持安全基线 · VULN-01～05 已在 `vuln/*` 分支实现（默认 `off`，不合入 main） · 未创建云资源 · 本次文档改动未 push
+> 状态：**M1 完成 / M2 漏洞分支已验证 / M3 已部署** · `main` 保持安全基线 · VULN-01～05 已在 `vuln/*` 分支实现并完成 loopback 验证（默认 `off`，不合入 main） · 主站 `http://{{PUBLIC_IP}}:8080`（无域名/HTTPS） · 本次文档改动未 push
 > 用途：课程小组自主设计的 Web 管理系统靶场，仅用于**课程授权范围**内的安全测试。
 
 ## 这是什么
@@ -10,8 +10,8 @@
 **不是什么**：
 
 - ⚠️ **main 不是漏洞靶场成品**：SQL 注入 / XSS / 越权 / 不安全上传 / 弱认证只存在于 `vuln/*` 分支；VULN-01～05 默认 `VULN_MODE=off`，仅用于课程授权靶场
-- ❌ 不是已部署环境（`docs/04-deploy.md` 只有占位符与步骤，未创建任何云资源）
-- ❌ 不是生产系统（单机课程版、演示账号、无 HTTPS）
+- ✅ 已在课程授权服务器完成主站部署：`http://{{PUBLIC_IP}}:8080`（Ubuntu 24.04 / Docker Compose / MySQL 8.4；无域名/HTTPS）
+- ❌ 不是生产系统（单机课程版、演示账号暂保留、无 HTTPS）
 
 ## 快速开始（3 分钟，无需 MySQL）
 
@@ -105,6 +105,7 @@ course-sec-lab/
 ├── deploy/
 │   ├── docker-compose.yml  # web + backend + db
 │   ├── docker-compose.dev.yml # 仅本地：把 MySQL 映射到 127.0.0.1
+│   ├── docker-compose.lowmem.yml # 低内存主机可选覆盖
 │   ├── nginx/default.conf
 │   └── scripts/            # deploy / rollback / wait-for-db
 ├── scripts/                # init-env / check-env / check-framework / dev-up / seed
@@ -192,14 +193,14 @@ course-sec-lab/
 | 优先级 | Issue | 内容 | 预估 |
 | --- | --- | --- | --- |
 | P0 | B-02～B-06 | VULN-01～05 独立分支实现（开关默认关闭，不合入 main） | 已完成（独立分支） |
-| P1 | B-07～B-10 | 测试账号、验证方法、隔离边界检查 | 已完成（B-09 待 C-05） |
-| P0 | C-01～C-05 | 独立云资源、安全组、服务器初始化、生产 `.env`、容器部署 | 2 天 |
-| P1 | C-06～C-09 | 公网访问、日志监控、备份回滚、HTTPS | 2 天 |
-| P1 | D-01～D-05 | 部署/漏洞/验证/访问/隔离文档定稿 | 2 天 |
-| P1 | E-01～E-07 | 扫描对接、窗口、日志、分诊、回收、下线、复盘 | 3 天 |
+| P1 | B-07～B-11 | 测试账号、验证方法、隔离检查、B-09 复验、清单定稿 | 已完成（服务器 loopback） |
+| P0 | C-01～C-05 | 独立云资源、安全组、服务器初始化、生产 `.env`、容器部署 | 已完成 |
+| P1 | C-06～C-09 | 公网访问、日志监控、备份回滚、HTTPS | C-06/C-07 完成；C-08 部分；C-09 不适用 |
+| P1 | D-01～D-05 | 部署/漏洞/验证/访问/隔离文档定稿 | D-01～D-04 完成；D-05 待签字 |
+| P1 | E-01～E-07 | 扫描对接、窗口、日志、分诊、回收、下线、复盘 | 待外部/课程平台 |
 | P2 | M0-01（未入 TODO） | 依赖升级与 CI（测试 + 构建 + 自检） | 0.5 天 |
 
-> M1（A-01～A-10）与 B-01 已随 PR #2 合并；B-02～B-06 在远端 `vuln/*` 独立分支；B-07/B-08/B-10 本地完成待提 PR；剩余任务以 [TODO.md](TODO.md) 为准。
+> 主站已部署在课程授权云服务器（HTTP 8080）；B-09 在服务器 loopback 完成；B-12 按要求保留主站未下线。剩余任务以 [TODO.md](TODO.md) 为准。
 
 ## 安全与合规
 
@@ -210,19 +211,22 @@ course-sec-lab/
 
 ## 当前验证状态
 
-> 更新于 2026-11-26（Windows 11 + Node v24.18.0 / npm 11.16.0；M0 历史数据保留在 [框架验收](docs/framework-acceptance.md)）。
+> 更新于 2026-11-27（Windows 11 + Node v24.18.0；M0 历史数据保留在 [框架验收](docs/framework-acceptance.md)）。
 
 | 项 | 结果 |
 | --- | --- |
-| 后端自动化测试（内存驱动） | ✅ 历史 44 项通过（health 4 / auth 6 / business 10 / business-write 9 / upload 7 / admin 8）；本次未重跑 |
-| 前端生产构建 | ✅ 历史通过（57 模块）；本次未重跑 |
-| 框架静态自检 `npm run check` | ✅ 2026-11-26 重跑：26 项通过 |
-| 冒烟 / 契约测试（内存驱动） | ✅ 历史 6 项 + 11 项通过；本次未重跑 |
-| MySQL 迁移 / 种子 | ✅ 2026-11-26 独立 MySQL 8.4.4 容器复验：`001`+`002` 均应用，`roles=2 users=2 business_items=11` |
-| B-10 五漏洞本地检验 | ✅ 30/30 项符合预期；VULN-02/03/05 有效，VULN-01/04 部分有效；详见 [docs/14](docs/14-vuln-branch-isolation-check.md) |
-| Docker Compose 编排 | ⚠️ M0 历史通过；2026-11-26 未重建镜像/未在 Compose 内复跑，仅独立容器 |
-| 浏览器端到端 | ⚠️ VULN-02 用 Edge 158 headless 验证；M1 全量 E2E 仍未自动化，手测清单见 [13](docs/13-m1-delivery-runbook.md#26-浏览器手测清单) |
-| 公网部署 / 域名 / HTTPS | ⚠️ 未执行（按课程要求未创建云资源） |
+| 后端自动化测试（内存驱动） | ✅ 44 项通过（本次重跑） |
+| 前端生产构建 | ✅ 57 模块通过（本次重跑） |
+| 框架静态自检 `npm run check` | ✅ 26 项通过 |
+| 冒烟 / 契约测试（内存驱动） | ✅ 6 项 + 11 项通过 |
+| MySQL 迁移 / 种子 | ✅ 本地独立容器 + 云服务器 Compose 实例均复验：`001`+`002`，users=2 / items=11 |
+| 主站公网 | ✅ `http://{{PUBLIC_IP}}:8080`：health 200、登录 200、前端 200 |
+| B-09 五漏洞（服务器 loopback） | ✅ 全部执行；VULN-02/03/05 有效，VULN-01/04 部分有效；漏洞容器已删除 |
+| 备份 / 恢复 | ✅ DB dump + uploads 打包；DB dump 恢复到临时库核对（2/11）后删除 |
+| Docker Compose 编排 | ✅ 云服务器三容器 healthy；镜像本地构建后 `docker load`（服务器 Docker Hub 超时） |
+| 浏览器端到端 | ⚠️ VULN-02 用 Edge 158 headless；M1 全量 E2E 仍未自动化 |
+| 公网 80 / HTTPS | ⚠️ 80 被云侧拦截，改用 8080；无域名/HTTPS（用户选择暂不需要） |
+| B-12/E 外部项 | ⏳ 主站按要求保留；教师签字/扫描对接/复盘未执行 |
 
 > 详细命令、关键输出与仍未验证项见 [框架验收清单](docs/framework-acceptance.md) 附录 A/B/D。
 

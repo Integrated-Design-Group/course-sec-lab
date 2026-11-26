@@ -1,0 +1,28 @@
+# ===========================================================================
+# 低内存主机可选覆盖文件（例如 1GB 级课程云主机）
+# 用法（与基础编排叠加）：
+#   docker compose -f deploy/docker-compose.yml \
+#     -f deploy/docker-compose.lowmem.yml --env-file .env up -d
+# 说明：
+#   * 仅限制容器内存并降低 MySQL 内存占用，不改变端口/网络/数据卷
+#   * 建议同时给主机增加 2GiB swap；否则仍可能 OOM
+#   * 常规 4GB 以上主机不需要该文件
+# ===========================================================================
+services:
+  db:
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+00:00
+      - --innodb-buffer-pool-size=64M
+      - --performance-schema=OFF
+      - --max-connections=20
+    mem_limit: 480m
+
+  backend:
+    mem_limit: 256m
+    environment:
+      NODE_OPTIONS: --max-old-space-size=160
+
+  web:
+    mem_limit: 64m

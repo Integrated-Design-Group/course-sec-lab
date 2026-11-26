@@ -227,7 +227,8 @@ erDiagram
 > - **2026-11-13（框架阶段，MySQL 8.4.4 容器实测）**：`001_init_schema.sql` 创建 6 张表；`001_seed_base.sql` 写入 `roles=2 users=2 business_items=3`；`reset → migrate → seed` 可重复执行并重新登录；宿主机开发模式（`127.0.0.1:3306`）同样通过。
 > - **2026-11-18（M1，内存驱动实测）**：新增 `002_m1_business_indexes.sql` 与 `002_seed_m1_demo.sql`；内存种子同步扩展为 11 条条目。后端 44 项测试、冒烟 6 项、契约 11 项通过。
 > - **2026-11-26（MySQL 8.4.4 独立容器复验）**：`001` + `002` 两个迁移均成功应用；`db:seed` 输出 `roles=2 users=2 business_items=11`；`002` 的两个索引随迁移创建。测试账号 `stuB` 由 `backend/scripts/create-test-account.mjs` 另行创建，**不进入默认种子**，因此默认 `users=2` 不变。详见 [15-vuln-test-accounts.md](./15-vuln-test-accounts.md)。
-> - **未验证及原因**：未在项目 Compose 编排内复跑 2026-11-26 的复验；该次使用独立 MySQL 8.4.4 容器与分支 worktree，验证了迁移/种子本身，但未覆盖 Compose 的卷/网络/健康检查组合。云上数据库仍未部署。
+> - **2026-11-26（云服务器 Compose 实例）**：在课程授权 Ubuntu 24.04 服务器的 MySQL 8.4.4 容器中再次执行迁移与种子，结果一致（users=2 / items=11）；DB dump 已恢复到临时库并核对计数，临时库已删除。主站保留运行。
+> - **2026-11-26 补验（云服务器 Compose）**：已在课程授权 Ubuntu 24.04 服务器的 MySQL 8.4.4 容器中复跑 `001+002` 迁移与种子，结果一致；DB dump 恢复到临时库核对 users=2 / items=11 后删除。仍限制：未做高并发/性能压测；未覆盖多副本。
 
 ### 7.1 首次建库（空库 → 可运行）
 

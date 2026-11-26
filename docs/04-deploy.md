@@ -4,7 +4,21 @@
 > **前置条件**：拥有课程授权的云主机与域名（可选）；本机可通过 SSH 访问服务器；已完成 [07-security-isolation.md](./07-security-isolation.md) 的隔离确认
 > **预计耗时**：首次部署 40～60 分钟；熟悉后 15 分钟
 
-> ⚠️ **本文档中的公网 IP、域名、CIDR、密码全部是占位符**。框架搭建阶段**没有创建任何真实云资源，也没有进行公网部署**，因此不提供任何“公网已验证”的结论。**本地 Docker Compose 栈**已在开发机完成构建、启动、迁移与健康检查（见 [framework-acceptance.md](./framework-acceptance.md) 附录 A），但云上步骤仍须按本文在授权环境执行并自行记录结果。
+> ⚠️ **本文档中的公网 IP、域名、CIDR、密码全部是占位符**。框架搭建阶段没有创建真实云资源；2026-11-26 已在课程授权服务器上完成一次实际部署，记录见下方第 0 节。真实 IP/密码只登记在课程平台与部署机 `.env`，不写入仓库。
+>
+> **0. 2026-11-26 实际部署记录（脱敏）**
+>
+> - 主机：Ubuntu 24.04.2 LTS，x86_64，2 vCPU / 894 MiB RAM，30 GiB 磁盘；临时增加 2 GiB swap。
+> - 软件：Docker 29.1.3、Compose 2.40.3（Ubuntu 源安装）；MySQL 8.4.4 容器。
+> - 入口：`http://{{PUBLIC_IP}}:8080`（无域名、无 HTTPS；80/443 当前放行但未使用）。
+> - 镜像：服务器访问 Docker Hub 超时，镜像在本地构建后用 `docker save` + `scp` + `docker load` 导入；镜像文件不入库。
+> - 配置：`NODE_ENV=production`、`DB_DRIVER=mysql`、`.env` 权限 600；数据库/JWT 随机生成，不写入仓库。
+> - 结果：`/api/v1/health` 200（mysql/up）、`student` 登录 200、前端 `/` 200；`001+002` 迁移、种子 11 条；管理端审计可查。
+> - 备份：DB dump + uploads 卷打包；DB dump 已恢复到临时库验证（users=2、items=11），临时库已删除。
+> - 低内存：使用 [deploy/docker-compose.lowmem.yml](../deploy/docker-compose.lowmem.yml) 限制 db/backend/web 内存；MySQL 降 buffer pool、关闭 performance_schema。
+> - **未完成/限制**：80 端口被安全组/云侧拦截，改用 8080；HTTPS 未启用；代码回滚脚本未实际演练；B-12 下线未执行（按要求保留主站）。
+>
+> 复跑时仍需按本文第 3～9 节执行，并自行记录真实结果；不要把真实 IP/密码写回仓库。
 
 ## 1. 占位符约定
 
