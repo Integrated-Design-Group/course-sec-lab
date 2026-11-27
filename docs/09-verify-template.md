@@ -6,7 +6,7 @@
 
 ## 0. 使用说明
 
-本文件是**模板**，不是已完成的验证报告。`VERIFY-VULN-01-01`～`VERIFY-VULN-05-01` 已于 2026-11-26 在课程授权云服务器的独立容器/端口上完成 loopback 验证；验证结果见 [08-vuln-design.md](./08-vuln-design.md) 第 8 节与 [14-vuln-branch-isolation-check.md](./14-vuln-branch-isolation-check.md)。证据只保留在课程本地/课程平台，未提交攻击载荷。
+本文件是**模板**，不是已完成的验证报告。`VERIFY-VULN-01-01`～`VERIFY-VULN-05-01` 已于 2026-11-27 在课程内网 `vuln/ALL` 全量模式下完成验证；VULN-01 无口令绕过、VULN-04 公开读取执行均已补全。结果见 [08-vuln-design.md](./08-vuln-design.md)、[16-vuln-catalog-and-verification.md](./16-vuln-catalog-and-verification.md)。证据只保留在课程本地/课程平台，不提交攻击载荷。
 
 - 每个漏洞至少一个验证用例，编号 `VERIFY-VULN-0x-yy`；M1 已冻结 5 个：`VERIFY-VULN-01-01` ～ `VERIFY-VULN-05-01`。
 - 复制第 3 节的记录模板，逐字段填写；**未执行的项必须写“未验证”及原因**。
@@ -14,11 +14,11 @@
 
 | 用例 | 对应漏洞 | 状态 | 前置能力 |
 | --- | --- | --- | --- |
-| `VERIFY-VULN-01-01` | VULN-01 登录 SQL 注入 | 已执行（服务器 loopback，2026-11-26） | 登录接口（已实现） |
-| `VERIFY-VULN-02-01` | VULN-02 存储型 XSS | 已执行（服务器 loopback + Edge headless） | 条目写入 + 详情页（A-02/A-05 已实现） |
-| `VERIFY-VULN-03-01` | VULN-03 水平越权 | 已执行（服务器 loopback） | 双账号 + 条目写接口（已实现） |
-| `VERIFY-VULN-04-01` | VULN-04 不安全上传 | 已执行（服务器 loopback） | 上传接口（已实现） |
-| `VERIFY-VULN-05-01` | VULN-05 认证缺陷 | 已执行（服务器 loopback） | 登录/退出/令牌（已实现） |
+| `VERIFY-VULN-01-01` | VULN-01 登录 SQL 注入 | 已执行（vuln/ALL，2026-11-27） | 登录接口（已实现） |
+| `VERIFY-VULN-02-01` | VULN-02 存储型 XSS | 已执行（vuln/ALL，2026-11-27） | 条目写入 + 详情页（A-02/A-05 已实现） |
+| `VERIFY-VULN-03-01` | VULN-03 水平越权 | 已执行（vuln/ALL，2026-11-27） | 双账号 + 条目写接口（已实现） |
+| `VERIFY-VULN-04-01` | VULN-04 不安全上传 | 已执行（vuln/ALL，2026-11-27） | 上传接口（已实现） |
+| `VERIFY-VULN-05-01` | VULN-05 认证缺陷 | 已执行（vuln/ALL，2026-11-27） | 登录/退出/令牌（已实现） |
 
 ## 1. 验证前准备
 

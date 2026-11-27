@@ -175,7 +175,7 @@
 | `VITE_APP_TITLE` | 课程安全靶场… | 页面标题 |
 | `VITE_DEV_PROXY_TARGET` | `http://127.0.0.1:3000` | 仅开发期 Vite 代理目标 |
 
-> `VULN_MODE` **不属于 main 的运行时配置**；它只存在于 `vuln/*` 分支的靶场实例，默认 `off`，见 [08 漏洞设计](./08-vuln-design.md)。
+> `VULN_MODE` **不属于 main 的运行时配置**；`vuln/ALL` 默认 `ALL`（5 个同时开启，仅课程内网），单漏洞分支默认 `off`，见 [08 漏洞设计](./08-vuln-design.md)。
 
 ## 6. 两种运行模式
 
