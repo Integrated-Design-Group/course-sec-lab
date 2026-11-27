@@ -1,5 +1,5 @@
 /**
- * 概览页：验证健康检查与登录态，展示框架阶段边界
+ * 概览页：验证健康检查与登录态，展示当前交付边界
  */
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -41,7 +41,7 @@ export function DashboardPage() {
     <>
       <PageHeader
         title="系统概览"
-        description="M1 业务阶段：健康检查、登录态、条目与审计能力一目了然。"
+        description="M1 业务可用 / M2 全量靶场在 vuln/ALL / M3 已部署；main 保持安全基线。"
         actions={
           <button type="button" className="btn btn-outline" onClick={loadHealth} disabled={loading}>
             重新检查
@@ -111,21 +111,25 @@ export function DashboardPage() {
             </div>
           </dl>
           <p className="muted">
-            登录态由 JWT 承载；退出登录后令牌立即失效（服务端撤销列表，框架阶段为单进程实现）。
+            登录态由 JWT 承载；退出登录后令牌立即失效（服务端撤销列表当前为单进程实现）。
           </p>
         </section>
       </div>
 
       <section className="card">
-        <h2>当前阶段边界</h2>
+        <h2>当前交付边界</h2>
         <ul className="check-list">
           <li className="check-list__done">已实现：统一响应/错误码、配置校验、结构化日志、健康检查</li>
           <li className="check-list__done">已实现：登录 / 退出 / 当前用户 / 角色守卫</li>
           <li className="check-list__done">已实现：业务条目增删改查（归属校验 + 状态机 + 乐观锁 + 审计）</li>
           <li className="check-list__done">已实现：封面受控鉴权读取、管理端用户启停与审计检索</li>
-          <li className="check-list__pending">未实现：VULN-01～VULN-05 漏洞实现（设计已冻结，见 docs/08）</li>
-          <li className="check-list__pending">未开始：云服务器部署（文档已给出架构与占位符，未创建任何真实资源）</li>
+          <li className="check-list__done">已实现：VULN-01～05 位于 vuln/ALL（默认 ALL，不合入 main）；VULN-01/04 已补全</li>
+          <li className="check-list__done">已实现：课程授权云服务器部署（HTTP 8080，主站保留运行）</li>
+          <li className="check-list__pending">未启用：域名 / HTTPS（课程选择暂不需要）；D/E 外部流程待确认</li>
         </ul>
+        <p className="muted">
+          main 保持安全基线；全量靶场仅课程内网使用，详见 docs/08 与 docs/16。
+        </p>
       </section>
 
       <div className="grid grid-2">
