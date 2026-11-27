@@ -397,6 +397,15 @@ const DOC_FILES = [
   'docs/10-access.md',
   'docs/11-github-collaboration.md',
   'docs/12-local-setup.md',
+  'docs/13-m1-delivery-runbook.md',
+  'docs/14-vuln-branch-isolation-check.md',
+  'docs/15-vuln-test-accounts.md',
+  'docs/16-vuln-catalog-and-verification.md',
+  'docs/VERIFY-VULN-01-01.md',
+  'docs/VERIFY-VULN-02-01.md',
+  'docs/VERIFY-VULN-03-01.md',
+  'docs/VERIFY-VULN-04-01.md',
+  'docs/VERIFY-VULN-05-01.md',
 ];
 
 const headerProblems = [];
@@ -439,10 +448,15 @@ if (exists('docs/03-api.md')) {
 if (exists('docs/08-vuln-design.md')) {
   const vuln = readText('docs/08-vuln-design.md');
   const ids = ['VULN-01', 'VULN-02', 'VULN-03', 'VULN-04', 'VULN-05'];
-  if (ids.every((id) => vuln.includes(id)) && vuln.includes('未实现')) {
-    record('PASS', '漏洞设计预留 VULN-01～05 且标注未实现');
+  if (
+    ids.every((id) => vuln.includes(id)) &&
+    vuln.includes('已实现') &&
+    vuln.includes('默认') &&
+    vuln.includes('main')
+  ) {
+    record('PASS', '漏洞设计覆盖 VULN-01～05，且标注实现分支/默认 off/main 无漏洞');
   } else {
-    record('FAIL', '漏洞设计文档不完整或未标注未实现');
+    record('FAIL', '漏洞设计文档不完整或未标注实现/开关状态');
   }
 }
 
