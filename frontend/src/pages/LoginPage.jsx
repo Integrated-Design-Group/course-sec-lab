@@ -1,5 +1,5 @@
 /**
- * 登录页（占位实现，但登录链路是真实可用的）
+ * 登录页：课程授权环境入口
  */
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
@@ -51,7 +51,7 @@ export function LoginPage() {
     <div className="login-card">
       <header className="login-card__header">
         <h2>登录</h2>
-        <p className="muted">使用课程演示账号登录；未登录访问受限页面会被重定向到本页。</p>
+        <p className="muted">使用课程演示账号登录；仅限课程授权环境，未登录访问受限页面会被重定向到本页。</p>
       </header>
 
       {error && (
