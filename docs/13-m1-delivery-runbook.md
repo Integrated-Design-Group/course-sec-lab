@@ -134,6 +134,8 @@ npm --prefix backend run db:seed
 完成：roles=2 users=2 business_items=11
 ```
 
+> 2026-11-26 已用独立 MySQL 8.4.4 容器复验 `001+002` 迁移与种子；项目 Compose 内的 MySQL 组合仍未在本次复跑。
+
 再验证表结构与索引：
 
 ```bash

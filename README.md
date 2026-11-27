@@ -1,17 +1,17 @@
 # 课程 Web 安全靶场 · 校园二手教材交易平台
 
-> 状态：**M1 业务阶段** · 条目 CRUD / 封面 / 管理端已实现 · 未植入任何漏洞 · 未创建云资源 · 未执行 git push
+> 状态：**M1 完成 / M2 全量靶场 / M3 已部署** · `main` 保持安全基线 · `vuln/ALL` 默认 5 漏洞开启（`VULN_MODE=ALL`，仅课程内网） · 主站 `http://{{PUBLIC_IP}}:8080`（无域名/HTTPS） · 本次文档/前端改动未 push
 > 用途：课程小组自主设计的 Web 管理系统靶场，仅用于**课程授权范围**内的安全测试。
 
 ## 这是什么
 
-一个可运行的 Web 管理系统：学生发布/浏览二手教材，管理员维护平台内容。当前完成 **M1 业务阶段**：登录/角色、条目增删改查（归属校验 + 状态机 + 乐观锁 + 审计）、封面上传与受控读取、管理端用户启停与审计检索；漏洞仅完成设计冻结，代码尚未实现。
+一个可运行的 Web 管理系统：学生发布/浏览二手教材，管理员维护平台内容。`main` 已完成 **M1 业务阶段**；课程内网 `vuln/ALL` 分支在 `VULN_MODE=ALL` 下默认开启 VULN-01～05（不合入 main，仅课程授权环境）。
 
 **不是什么**：
 
-- ❌ 不是漏洞靶场成品（SQL 注入 / XSS / 越权 / 不安全上传均未实现，VULN-01～05 仅“已设计”）
-- ❌ 不是已部署环境（`docs/04-deploy.md` 只有占位符与步骤，未创建任何云资源）
-- ❌ 不是生产系统（单机课程版、演示账号、无 HTTPS）
+- ⚠️ **main 不是漏洞靶场成品**：SQL 注入 / XSS / 越权 / 不安全上传 / 弱认证只存在于 `vuln/ALL`；该分支默认 `VULN_MODE=ALL`，仅用于课程内网授权测试
+- ✅ 已在课程授权服务器完成主站部署：`http://{{PUBLIC_IP}}:8080`（Ubuntu 24.04 / Docker Compose / MySQL 8.4；无域名/HTTPS）
+- ❌ 不是生产系统（单机课程版、演示账号暂保留、无 HTTPS）
 
 ## 快速开始（3 分钟，无需 MySQL）
 
@@ -90,7 +90,7 @@ course-sec-lab/
 ├── .env.example            # 环境变量模板（只含占位符）
 ├── Makefile                # Linux/macOS/WSL 快捷命令
 ├── .github/                # PR / Issue 模板
-├── docs/                   # 15 篇设计与规范文档
+├── docs/                   # 23 篇设计、规范、验证与验收文档
 ├── backend/                # Node.js + Express
 │   ├── src/{config,routes,controllers,services,repositories,middlewares,models,utils,db}
 │   ├── scripts/            # 迁移 / 种子 / 重置（mysql2）
@@ -105,6 +105,7 @@ course-sec-lab/
 ├── deploy/
 │   ├── docker-compose.yml  # web + backend + db
 │   ├── docker-compose.dev.yml # 仅本地：把 MySQL 映射到 127.0.0.1
+│   ├── docker-compose.lowmem.yml # 低内存主机可选覆盖
 │   ├── nginx/default.conf
 │   └── scripts/            # deploy / rollback / wait-for-db
 ├── scripts/                # init-env / check-env / check-framework / dev-up / seed
@@ -126,6 +127,7 @@ course-sec-lab/
 | `npm --prefix frontend run build` | 前端生产构建 |
 | `npm --prefix backend run db:migrate` | 数据库迁移 |
 | `npm --prefix backend run db:seed` | 种子数据 |
+| `npm --prefix backend run db:test-account` | 创建/启用课程测试账号（密码从环境变量读取，见 [docs/15](docs/15-vuln-test-accounts.md)） |
 | `bash scripts/seed.sh` | 重置 + 迁移 + 种子（演示前标准动作） |
 | `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml --env-file .env up -d db` | 仅启动本地 MySQL（绑定 127.0.0.1） |
 | `npm run check` | 框架自检（目录/JSON/YAML/密钥/文档） |
@@ -164,12 +166,16 @@ course-sec-lab/
 | [05 环境](docs/05-environment.md) | 版本锁定、命令、日志、变量 |
 | [06 规范](docs/06-conventions.md) | 分支、提交、PR、代码规范 |
 | [07 隔离授权](docs/07-security-isolation.md) | 独立隔离、授权边界、下线 |
-| [08 漏洞设计](docs/08-vuln-design.md) | VULN-01～05（已设计，未实现） |
+| [08 漏洞设计](docs/08-vuln-design.md) | VULN-01～05（vuln/ALL 默认 ALL，仅课程内网） |
 | [09 验证模板](docs/09-verify-template.md) | 验证流程与记录模板 |
 | [10 访问登记](docs/10-access.md) | 访问信息与账号发放（占位） |
 | [11 GitHub 协作](docs/11-github-collaboration.md) | 术语、分支、push/pull、PR、评审、冲突解决 |
 | [12 本地部署](docs/12-local-setup.md) | 从安装软件到登录验证的完整步骤 |
 | [13 交付流程](docs/13-m1-delivery-runbook.md) | M1 本地测试 + PR 提交的逐条命令 |
+| [14 隔离检查](docs/14-vuln-branch-isolation-check.md) | B-10 分支隔离与五漏洞有效性检查 |
+| [15 测试账号](docs/15-vuln-test-accounts.md) | 测试账号、造数脚本与数据字典 |
+| [16 漏洞清单与验证](docs/16-vuln-catalog-and-verification.md) | 5 个漏洞的完整清单、影响、修复与验证方法（vuln/ALL） |
+| VERIFY-VULN-0x-01（5 份） | 各漏洞验证方法（B-09 执行） |
 | [框架验收](docs/framework-acceptance.md) | M0 框架阶段人工验收基线 |
 
 ## 新成员接入
@@ -187,15 +193,15 @@ course-sec-lab/
 
 | 优先级 | Issue | 内容 | 预估 |
 | --- | --- | --- | --- |
-| P0 | B-02～B-06 | VULN-01～05 独立分支实现（开关默认关闭，不合入 main） | 每个 0.5～1 天 |
-| P1 | B-07～B-10 | 测试账号、验证方法、复现归档、隔离边界检查 | 2～3 天 |
-| P0 | C-01～C-05 | 独立云资源、安全组、服务器初始化、生产 `.env`、容器部署 | 2 天 |
-| P1 | C-06～C-09 | 公网访问、日志监控、备份回滚、HTTPS | 2 天 |
-| P1 | D-01～D-05 | 部署/漏洞/验证/访问/隔离文档定稿 | 2 天 |
-| P1 | E-01～E-07 | 扫描对接、窗口、日志、分诊、回收、下线、复盘 | 3 天 |
+| P0 | B-02～B-06 | VULN-01～05 独立分支实现（不合入 main） | 已完成（vuln/ALL 全量） |
+| P1 | B-07～B-11 | 测试账号、验证方法、隔离检查、B-09 复验、清单定稿 | 已完成（服务器 loopback） |
+| P0 | C-01～C-05 | 独立云资源、安全组、服务器初始化、生产 `.env`、容器部署 | 已完成 |
+| P1 | C-06～C-09 | 公网访问、日志监控、备份回滚、HTTPS | C-06/C-07 完成；C-08 部分；C-09 不适用 |
+| P1 | D-01～D-05 | 部署/漏洞/验证/访问/隔离文档定稿 | D-01～D-04 完成；D-05 待签字 |
+| P1 | E-01～E-07 | 扫描对接、窗口、日志、分诊、回收、下线、复盘 | 待外部/课程平台 |
 | P2 | M0-01（未入 TODO） | 依赖升级与 CI（测试 + 构建 + 自检） | 0.5 天 |
 
-> M1（A-01～A-07、A-09、A-10）与 B-01 已完成；剩余任务以 [TODO.md](TODO.md) 的勾选状态为准。
+> 主站已部署在课程授权云服务器（HTTP 8080）；B-09 在服务器 loopback 完成；B-12 按要求保留主站未下线。剩余任务以 [TODO.md](TODO.md) 为准。
 
 ## 安全与合规
 
@@ -206,18 +212,25 @@ course-sec-lab/
 
 ## 当前验证状态
 
-> 更新于 2026-11-18（Windows 11 + Node v24.18.0 / npm 11.16.0，内存驱动；M0 历史数据保留在 [框架验收](docs/framework-acceptance.md)）。
+> 更新于 2026-11-27（Windows 11 + Node v24.18.0；M0 历史数据保留在 [框架验收](docs/framework-acceptance.md)）。
 
 | 项 | 结果 |
 | --- | --- |
-| 后端自动化测试（内存驱动） | ✅ 44 项通过（health 4 / auth 6 / business 10 / business-write 9 / upload 7 / admin 8） |
-| 前端生产构建 | ✅ 通过（57 模块） |
+| 后端自动化测试（内存驱动） | ✅ 44 项通过（本次重跑） |
+| 前端生产构建 | ✅ 57 模块通过（本次重跑） |
 | 框架静态自检 `npm run check` | ✅ 26 项通过 |
 | 冒烟 / 契约测试（内存驱动） | ✅ 6 项 + 11 项通过 |
-| MySQL 迁移 / 种子 / 重置 | ⚠️ `001` 为 M0 历史实测；`002` 迁移与 `002` 种子**未在本次环境复验**（未启动 MySQL） |
-| Docker Compose 编排 | ⚠️ M0 已实测通过；M1 未重新构建镜像验证 |
-| 浏览器端到端 | ⚠️ M0 有 11 项历史记录；M1 新增表单/管理页尚未做自动化 E2E，手测清单见 [13](docs/13-m1-delivery-runbook.md#26-浏览器手测清单) |
-| 公网部署 / 域名 / HTTPS | ⚠️ 未执行（按课程要求未创建云资源） |
+| MySQL 迁移 / 种子 | ✅ 本地独立容器 + 云服务器 Compose 实例均复验：`001`+`002`，users=2 / items=11 |
+| 主站公网 | ✅ `http://{{PUBLIC_IP}}:8080`：health 200、登录 200、前端 200 |
+| 前端进度文案 | ✅ 2026-11-27 登录页/主页已同步，并重建 `csl-web` 容器上线 |
+| B-09 五漏洞（服务器 loopback） | ✅ 全部执行；VULN-01～05 均有效（VULN-01 无口令绕过、VULN-04 公开读取/执行） |
+| 全量靶场 | ✅ `vuln/ALL` 默认 `VULN_MODE=ALL`，5 漏洞同时开启；仅课程内网 |
+| 备份 / 恢复 | ✅ DB dump + uploads 打包；DB dump 恢复到临时库核对（2/11）后删除 |
+| Docker Compose 编排 | ✅ 云服务器三容器 healthy；镜像本地构建后 `docker load`（服务器 Docker Hub 超时） |
+| 浏览器端到端 | ⚠️ VULN-02 用 Edge 158 headless；M1 全量 E2E 仍未自动化 |
+| 公网 80 / HTTPS | ⚠️ 80 被云侧拦截，改用 8080；无域名/HTTPS（用户选择暂不需要） |
+| B-12/E 外部项 | ⏳ 主站按要求保留；教师签字/扫描对接/复盘未执行 |
+| 全量靶场风险 | ⚠️ 默认 ALL 仅适合课程内网；详细应对预案只留本地，不提交仓库 |
 
 > 详细命令、关键输出与仍未验证项见 [框架验收清单](docs/framework-acceptance.md) 附录 A/B/D。
 
