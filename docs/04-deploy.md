@@ -17,7 +17,8 @@
 > - 备份：DB dump + uploads 卷打包；DB dump 已恢复到临时库验证（users=2、items=11），临时库已删除。
 > - 低内存：使用 [deploy/docker-compose.lowmem.yml](../deploy/docker-compose.lowmem.yml) 限制 db/backend/web 内存；MySQL 降 buffer pool、关闭 performance_schema。
 > - **2026-11-27 前端同步**：登录页/主页进度文案已更新，重新构建 `course-sec-lab/web:0.1.0` 并只重建 `csl-web` 容器；数据库/backend 未动；公网页面已核验。
-> - **未完成/限制**：80 端口从外网不可达，改用 8080；HTTPS 未启用；代码回滚脚本未实际演练；B-12 下线未执行（按要求保留主站）；D/E 外部流程待确认。
+> - **2026-11-27 全量靶场部署**：服务器切换到本地 `vuln/ALL` 分支镜像，`VULN_MODE=ALL`（5 个漏洞默认开启）；VULN-01 登录绕过、VULN-04 公开上传读取已补全；仅课程内网使用。上线后 `health.vulnMode=ALL`，主站前端同步显示全量靶场提示。
+> - **未完成/限制**：80 端口从外网不可达，改用 8080；HTTPS 未启用；代码回滚脚本未实际演练；B-12 下线未执行（按要求保留主站）；D/E 外部流程待确认；全量模式风险高于单漏洞模式，测试后应恢复 off 或停止实例。
 >
 > 复跑时仍需按本文第 3～9 节执行，并自行记录真实结果；不要把真实 IP/密码写回仓库。
 

@@ -400,6 +400,7 @@ const DOC_FILES = [
   'docs/13-m1-delivery-runbook.md',
   'docs/14-vuln-branch-isolation-check.md',
   'docs/15-vuln-test-accounts.md',
+  'docs/16-vuln-catalog-and-verification.md',
   'docs/VERIFY-VULN-01-01.md',
   'docs/VERIFY-VULN-02-01.md',
   'docs/VERIFY-VULN-03-01.md',

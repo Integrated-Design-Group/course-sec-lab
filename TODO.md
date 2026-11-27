@@ -229,24 +229,24 @@
   - 建议负责人 / 角色：验证执行人
   - 依赖：B-08、C-05
   - 完成定义：在授权靶场逐项复现，证据脱敏归档；记录时间（UTC）、模式、数据版本
-  - 完成证据：云服务器 Ubuntu 24.04 / Docker 29.1.3，`VULN-01～05` 独立容器/端口 loopback 复验；VULN-02 经 SSH 隧道 + Edge 158 headless 验证；结果见 `docs/VERIFY-*`、`docs/08` 第 8 节；原始证据在仓库外 `B09-server-verification-report.md` / `deploy-evidence/`（未提交）；**待提 PR**
-  - 完成人 / 日期：Harness / 2026-11-26
+  - 完成证据：云服务器 Ubuntu 24.04 / Docker 29.1.3，`vuln/ALL` 全量容器 loopback 复验；VULN-01 无口令绕过、VULN-04 公开上传读取/执行均通过；VULN-02 经 SSH 隧道 + Edge 158 headless；结果见 `docs/16-vuln-catalog-and-verification.md`、`docs/08` 第 8 节；原始证据仓库外（未提交）；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-27
   - 状态：完成（服务器 loopback 完成，待提 PR）
 
 - [x] **B-10 隔离边界检查**
   - 建议负责人 / 角色：安全评审
   - 依赖：B-02～B-06
-  - 完成定义：确认漏洞仅存在于 `vuln/*` 分支与独立实例；`main` 无漏洞；开关默认关闭；默认配置安全
-  - 完成证据：`docs/14-vuln-branch-isolation-check.md`；`main` 无 `VULN_MODE`/`dangerouslySetInnerHTML` 等漏洞代码；5 个分支 commit 与默认 `off` 已核验；本地 30/30 + 云服务器 loopback 复验一致；完整报告仓库外（未提交）；**待提 PR**
-  - 完成人 / 日期：Harness（复核 DLY0211 初稿）/ 2026-11-26
-  - 状态：完成（本地 + 云服务器 loopback，待提 PR）
+  - 完成定义：确认漏洞仅存在于 `vuln/*` 分支与独立实例；`main` 无漏洞；全量分支 `vuln/ALL` 默认 ALL，单漏洞分支默认 off
+  - 完成证据：`docs/14-vuln-branch-isolation-check.md`；`main` 无 `VULN_MODE`/`dangerouslySetInnerHTML` 等漏洞代码；`vuln/ALL` 默认 `ALL`、单漏洞分支默认 `off` 已核验；本地 + 云服务器 loopback 复验一致；完整报告仓库外（未提交）；**待提 PR**
+  - 完成人 / 日期：Harness（复核 DLY0211 初稿）/ 2026-11-27
+  - 状态：完成（全量 + 单漏洞隔离，待提 PR）
 
 - [x] **B-11 漏洞清单定稿**
   - 建议负责人 / 角色：漏洞负责人
   - 依赖：B-09、B-10
   - 完成定义：docs/08 状态表更新为“已验证”；补充风险等级、影响、修复建议、验证用例编号
-  - 完成证据：`docs/08-vuln-design.md` 状态表改为“已验证（2026-11-26 loopback）”；VULN-01/04 部分有效、VULN-02/03/05 有效；风险/影响/修复/用例齐全；**待提 PR**
-  - 完成人 / 日期：Harness / 2026-11-26
+  - 完成证据：`docs/08-vuln-design.md` 状态表改为“已验证（vuln/ALL，默认 ALL）”；VULN-01 无口令绕过、VULN-04 公开读取执行、VULN-02/03/05 均有效；完整清单见 `docs/16-vuln-catalog-and-verification.md`；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-27
   - 状态：完成（文档定稿，待提 PR）
 
 - [ ] **B-12 漏洞回归、关闭与下线**
@@ -347,16 +347,16 @@
   - 建议负责人 / 角色：漏洞负责人
   - 依赖：B-11
   - 完成定义：5 个漏洞的编号、类别、风险、影响、修复建议、验证用例、状态齐全；与实现/证据一致
-  - 完成证据：`docs/08-vuln-design.md` 状态表“已验证”；VULN-01/04 部分有效、VULN-02/03/05 有效；用例编号齐全；**待提 PR**
-  - 完成人 / 日期：Harness / 2026-11-26
+  - 完成证据：`docs/08-vuln-design.md` 状态表改为“已验证（vuln/ALL，默认 ALL）”；VULN-01 无口令绕过、VULN-04 公开上传执行、其余 3 个均有效；完整清单/方法见 `docs/16-vuln-catalog-and-verification.md`；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-27
   - 状态：完成（文档定稿，待提 PR）
 
 - [x] **D-03 验证方法文档定稿**
   - 建议负责人 / 角色：漏洞负责人 + 测试支持
   - 依赖：B-09
   - 完成定义：验证步骤可被第三方照做；含判定标准、证据要求、清理与复测
-  - 完成证据：`docs/09-verify-template.md` 状态改为“已执行（服务器 loopback）”；5 份 `VERIFY-*` 结论已更新；证据保留本地；**待提 PR**
-  - 完成人 / 日期：Harness / 2026-11-26
+  - 完成证据：`docs/09-verify-template.md` 状态改为“已执行”；5 份 `VERIFY-*` 结论已更新；新增 `docs/16-vuln-catalog-and-verification.md` 完整清单/方法；证据保留本地；**待提 PR**
+  - 完成人 / 日期：Harness / 2026-11-27
   - 状态：完成（文档定稿，待提 PR）
 
 - [x] **D-04 访问说明填实**
@@ -481,3 +481,4 @@
 | 2026-11-26 | B-07 测试账号脚本 + B-08 验证方法校正 + B-10 五漏洞本地检验与文档校准 | Harness | 待提 PR |
 | 2026-11-26 | 云服务器部署主站（HTTP 8080）、B-09 loopback 复验、B-11 清单定稿、C-01～C-07、D-01～D-04 | Harness | 待提 PR（不 push） |
 | 2026-11-27 | 同步登录页/主页进度文案；重建 web 镜像并更新线上 csl-web 容器（数据库/backend 未动） | Harness | 待提 PR（不 push） |
+| 2026-11-27 | 新增课程内网 `vuln/ALL` 全量分支；VULN-01 无口令绕过、VULN-04 公开读取执行补全；新增 docs/16 并同步文档/前端/服务器 | Harness | 待提 PR（不 push） |

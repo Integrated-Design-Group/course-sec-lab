@@ -15,7 +15,7 @@
 | `student` | 学生 A（可称 `stuA`） | 普通业务、创建自有条目、水平越权 A 侧 | `db/seeds/001_seed_base.sql` |
 | `stuB` | 学生 B（可称 `stuB`） | 水平越权 B 侧、双账号对比 | 由 `backend/scripts/create-test-account.mjs` 创建 |
 
-> `stuB` **不在默认种子里**，避免把可登录测试账号和密码固化进仓库。默认种子仍只有 `admin`/`student`（`users=2`）。
+> 当前课程内网部署分支为 `vuln/ALL`，默认 `VULN_MODE=ALL`（5 个漏洞同时开启）。`stuB` **不在默认种子里**，避免把可登录测试账号和密码固化进仓库；默认种子仍只有 `admin`/`student`（`users=2`）。全量模式下 VULN-03 可直接用 `student` 与 admin 条目（如 id=5）对比。
 
 ## 2. 创建 / 启用测试账号
 

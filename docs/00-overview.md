@@ -9,7 +9,7 @@
 **course-sec-lab（课程 Web 安全靶场）** 是一个课程小组自主设计的 Web 管理系统，当前处于 **M1 完成 / M2 漏洞分支已实现并验证 / M3 已部署** 阶段。
 
 - 业务场景：**校园二手教材交易平台**——学生发布闲置教材/笔记，管理员维护平台内容。
-- 当前交付：主站（M1）、5 个 `vuln/*` 分支（默认 off）、云服务器主站部署（HTTP 8080）、B-09 验证结果与文档。
+- 当前交付：主站（M1）、`vuln/ALL` 全量靶场分支（默认 `VULN_MODE=ALL`，仅课程内网）、云服务器主站部署（HTTP 8080）、B-09 验证结果、完整漏洞清单/验证方法。
 - 已交付环境：课程授权 Ubuntu 24.04 服务器；真实 IP 只登记课程平台，不写入仓库。
 - 明确不交付：第三方扫描系统对接、教师签字、真实 HTTPS 证书（用户选择暂不需要）。
 
@@ -88,7 +88,7 @@
 | --- | --- | --- | --- |
 | M0 框架 | 骨架 / 契约 / 最小链路 | ✅ 已完成 | 本仓库全部文档与代码骨架 |
 | M1 业务 | 完成条目 CRUD、权限校验、审计、封面、管理端 | ✅ 已完成（2026-11-18） | A-01～A-07、A-09、A-10 |
-| M2 漏洞 | 按 VULN-01～05 实现并隔离 | ✅ 已实现（vuln/*，默认 off）；B-09 待授权实例验证 | 漏洞分支 + 开关 + B-10 检查 |
+| M2 漏洞 | 按 VULN-01～05 实现并隔离 | ✅ 已实现（vuln/ALL，默认 ALL，仅课程内网）；B-09 已完成 | 漏洞分支 + 开关 + 完整清单 |
 | M3 部署 | 独立云资源部署与公网访问 | ✅ 已完成（2026-11-26，HTTP 8080；无域名/HTTPS） | 部署记录、访问地址（脱敏） |
 | M4 验证 | 验证报告、漏洞清单、复现步骤 | ⏳ 部分完成 | B-09/B-11 已完成；D/E 外部项待确认 |
 
@@ -111,7 +111,7 @@
 | [05-environment.md](./05-environment.md) | 版本锁定、端口、命令、日志、环境变量 |
 | [06-conventions.md](./06-conventions.md) | 分支、提交、PR、代码与文档规范 |
 | [07-security-isolation.md](./07-security-isolation.md) | 隔离与授权边界、下线流程 |
-| [08-vuln-design.md](./08-vuln-design.md) | 漏洞编号规则与清单（vuln/* 已实现，默认 off） |
+| [08-vuln-design.md](./08-vuln-design.md) | 漏洞设计状态（vuln/ALL 默认 ALL） |
 | [09-verify-template.md](./09-verify-template.md) | 验证方法与记录模板 |
 | [10-access.md](./10-access.md) | 访问登记、账号发放与回收（占位） |
 | [11-github-collaboration.md](./11-github-collaboration.md) | 分支、提交、PR、评审与冲突解决 |
@@ -119,6 +119,7 @@
 | [13-m1-delivery-runbook.md](./13-m1-delivery-runbook.md) | M1 测试与 PR 交付流程 |
 | [14-vuln-branch-isolation-check.md](./14-vuln-branch-isolation-check.md) | B-10 分支隔离与实现有效性检查 |
 | [15-vuln-test-accounts.md](./15-vuln-test-accounts.md) | 测试账号、造数脚本与数据字典 |
+| [16-vuln-catalog-and-verification.md](./16-vuln-catalog-and-verification.md) | 5 个漏洞的完整清单与验证方法（vuln/ALL） |
 | VERIFY-VULN-0x-01（5 份） | 各漏洞验证方法（B-09 执行） |
 | [framework-acceptance.md](./framework-acceptance.md) | M0 框架阶段人工验收基线 |
 
