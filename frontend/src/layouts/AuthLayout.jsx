@@ -25,8 +25,9 @@ export function AuthLayout() {
           <li>M1：登录 / 条目 CRUD / 封面受控读取 / 管理端</li>
           <li>VULN-01：登录 SQL 注入（可绕过密码）</li>
           <li>VULN-02：描述存储型 XSS（详情页执行）</li>
-          <li>VULN-03：条目水平越权；VULN-05：登录限流失效</li>
+          <li>VULN-03：条目水平越权</li>
           <li>VULN-04：不安全上传 + 公开读取执行</li>
+          <li>VULN-05：登录限流失效</li>
         </ul>
 
         <p className="auth-intro__warning">
