@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import multer from 'multer';
-import { config } from '../config/index.js';
+import { config, isVulnEnabled } from '../config/index.js';
 import { AppError } from '../utils/errors.js';
 
 fs.mkdirSync(config.upload.dir, { recursive: true });
@@ -25,12 +25,21 @@ const storage = multer.diskStorage({
     callback(null, config.upload.dir);
   },
   filename: (req, file, callback) => {
+    // ──【刻意漏洞 VULN-04】按原始文件名落盘；ALL / VULN-04 启用 ──
+    if (isVulnEnabled('VULN-04')) {
+      return callback(null, path.basename(String(file.originalname || 'upload')));
+    }
     const extension = ALLOWED_EXTENSIONS.get(file.mimetype)?.[0] ?? '.bin';
     callback(null, `${Date.now()}-${randomUUID()}${extension}`);
   },
 });
 
 function fileFilter(req, file, callback) {
+  // ──【刻意漏洞 VULN-04】跳过声明类型/扩展名白名单；ALL / VULN-04 启用 ──
+  if (isVulnEnabled('VULN-04')) {
+    return callback(null, true);
+  }
+
   if (!config.upload.allowedMime.includes(file.mimetype)) {
     return callback(
       new AppError('UNSUPPORTED_MEDIA_TYPE', `仅支持以下图片类型：${config.upload.allowedMime.join(', ')}`),

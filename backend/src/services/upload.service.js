@@ -11,7 +11,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { config } from '../config/index.js';
+import { config, isVulnEnabled } from '../config/index.js';
 import { repositories } from '../repositories/index.js';
 import { AppError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
@@ -69,22 +69,29 @@ export async function registerUpload({ file, user, ip, userAgent }) {
   const absolutePath = file.path;
 
   try {
-    const detected = detectMimeType(await readHeader(absolutePath, 12));
-    const allowed = config.upload.allowedMime;
+    let mimeType;
+    if (isVulnEnabled('VULN-04')) {
+      // ──【刻意漏洞 VULN-04】跳过类型/magic bytes/扩展名校验，信任客户端声明 ──
+      mimeType = file.mimetype || 'application/octet-stream';
+    } else {
+      const detected = detectMimeType(await readHeader(absolutePath, 12));
+      const allowed = config.upload.allowedMime;
 
-    if (!detected || !allowed.includes(detected)) {
-      throw new AppError('UNSUPPORTED_MEDIA_TYPE', `仅支持以下图片类型：${allowed.join(', ')}`);
-    }
-    if (detected !== file.mimetype) {
-      throw new AppError('UNSUPPORTED_MEDIA_TYPE', '文件内容与声明的 Content-Type 不一致');
+      if (!detected || !allowed.includes(detected)) {
+        throw new AppError('UNSUPPORTED_MEDIA_TYPE', `仅支持以下图片类型：${allowed.join(', ')}`);
+      }
+      if (detected !== file.mimetype) {
+        throw new AppError('UNSUPPORTED_MEDIA_TYPE', '文件内容与声明的 Content-Type 不一致');
+      }
+
+      const expectedExtension = extensionForMime(detected);
+      if (!path.basename(absolutePath).endsWith(expectedExtension)) {
+        throw new AppError('UNSUPPORTED_MEDIA_TYPE', '落盘文件名与检测到的文件类型不一致');
+      }
+      mimeType = detected;
     }
 
     const storedName = path.basename(absolutePath);
-    const expectedExtension = extensionForMime(detected);
-    if (!storedName.endsWith(expectedExtension)) {
-      throw new AppError('UNSUPPORTED_MEDIA_TYPE', '落盘文件名与检测到的文件类型不一致');
-    }
-
     const content = await fs.readFile(absolutePath);
     const sha256 = crypto.createHash('sha256').update(content).digest('hex');
     const now = new Date();
@@ -93,7 +100,7 @@ export async function registerUpload({ file, user, ip, userAgent }) {
       owner_id: Number(user.id),
       original_name: sanitizeOriginalName(file.originalname),
       stored_name: storedName,
-      mime_type: detected,
+      mime_type: mimeType,
       size_bytes: content.length,
       sha256,
       storage_path: storedName,
@@ -110,7 +117,7 @@ export async function registerUpload({ file, user, ip, userAgent }) {
       result: 'success',
       ip,
       userAgent,
-      detail: { mimeType: detected, sizeBytes: content.length },
+      detail: { mimeType, sizeBytes: content.length },
     });
 
     return toPublicFile(created);
@@ -155,6 +162,33 @@ export async function readUploadForUser({ fileId, user }) {
 
   if (!config.upload.allowedMime.includes(file.mime_type)) {
     throw new AppError('INTERNAL_ERROR', '文件元数据类型异常');
+  }
+
+  const absolutePath = resolveStoredPath(file.storage_path);
+  let stat;
+  try {
+    stat = await fs.stat(absolutePath);
+  } catch {
+    throw new AppError('NOT_FOUND', '文件内容不存在');
+  }
+  if (!stat.isFile()) throw new AppError('NOT_FOUND', '文件内容不存在');
+
+  return { file, absolutePath, size: stat.size };
+}
+
+/**
+ * ──【刻意漏洞 VULN-04】公开读取 ──
+ * ALL / VULN-04 时跳过登录与 MIME 白名单，直接返回落盘文件；
+ * 其他模式返回 404，避免误暴露为通用文件服务器。
+ */
+export async function readUploadPublic({ fileId }) {
+  if (!isVulnEnabled('VULN-04')) {
+    throw new AppError('NOT_FOUND', '接口不存在');
+  }
+
+  const file = await repositories.uploadedFiles.findById(fileId);
+  if (!file || file.status !== UPLOAD_STATUS.ACTIVE) {
+    throw new AppError('NOT_FOUND', `文件不存在：${fileId}`);
   }
 
   const absolutePath = resolveStoredPath(file.storage_path);

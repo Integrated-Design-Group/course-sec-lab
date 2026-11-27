@@ -16,6 +16,8 @@ process.env.LOG_LEVEL = 'error';
 process.env.LOG_TO_FILE = 'false';
 process.env.BCRYPT_ROUNDS = '10';
 process.env.LOGIN_RATE_LIMIT_MAX_ATTEMPTS = '100';
+// 单元测试默认验证安全基线；全量靶场由部署环境显式设置 VULN_MODE=ALL
+process.env.VULN_MODE = process.env.VULN_MODE || 'off';
 process.env.UPLOAD_DIR = `./.tmp-test-uploads-${process.pid}`;
 process.env.CORS_ORIGIN = 'http://localhost:5173';
 

@@ -12,7 +12,7 @@ export function MainLayout() {
         <Outlet />
       </main>
       <footer className="app-footer">
-        <span>课程 Web 安全靶场 · main 安全基线 · 漏洞仅 vuln/* 分支（默认 off）</span>
+        <span>课程内网全量靶场 · VULN_MODE=ALL · 仅限课程授权测试</span>
         <span className="muted">仅限课程授权范围内的安全测试</span>
       </footer>
     </div>

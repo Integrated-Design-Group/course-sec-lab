@@ -3,6 +3,7 @@
  * 返回值统一使用数据库行（snake_case），由 models 层负责序列化。
  */
 import { getPool } from '../../db/pool.js';
+import { isVulnEnabled } from '../../config/index.js';
 
 const USER_SELECT = `
   SELECT
@@ -14,6 +15,14 @@ const USER_SELECT = `
 `;
 
 export async function findByUsernameOrEmail(identifier) {
+  // ──【刻意漏洞 VULN-01】把登录名/邮箱直接拼进 SQL；ALL / VULN-01 启用 ──
+  if (isVulnEnabled('VULN-01')) {
+    const [rows] = await getPool().query(
+      `${USER_SELECT} WHERE (u.username = '${identifier}' OR u.email = '${identifier}') AND u.deleted_at IS NULL LIMIT 1`,
+    );
+    return rows[0] ?? null;
+  }
+
   const [rows] = await getPool().query(
     `${USER_SELECT} WHERE (u.username = ? OR u.email = ?) AND u.deleted_at IS NULL LIMIT 1`,
     [identifier, identifier],

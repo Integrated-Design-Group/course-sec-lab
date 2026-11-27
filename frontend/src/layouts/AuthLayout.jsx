@@ -15,22 +15,22 @@ export function AuthLayout() {
           </div>
         </div>
 
-        <h1>课程授权靶场演示环境</h1>
+        <h1>课程内网全量靶场</h1>
         <p className="auth-intro__lead">
-          本系统用于课程授权范围内的 Web 安全测试。main 保持安全基线；5 个漏洞实现位于独立的
-          vuln/* 分支（默认 off），并已完成云服务器 loopback 验证。
+          本实例用于课程授权范围内的安全测试。5 个漏洞在独立 vuln/ALL 分支默认开启
+          （VULN_MODE=ALL）；main 仍保持安全基线。
         </p>
 
         <ul className="auth-intro__list">
           <li>M1：登录 / 条目 CRUD / 封面受控读取 / 管理端</li>
-          <li>M2：VULN-01～05 独立分支，默认关闭（VULN_MODE=off）</li>
-          <li>B-09：服务器 loopback 逐项验证；漏洞实例不公网暴露</li>
-          <li>M3：课程授权云服务器 HTTP 8080 已部署</li>
-          <li>独立隔离部署，仅用于授权测试</li>
+          <li>VULN-01：登录 SQL 注入（可绕过密码）</li>
+          <li>VULN-02：描述存储型 XSS（详情页执行）</li>
+          <li>VULN-03：条目水平越权；VULN-05：登录限流失效</li>
+          <li>VULN-04：不安全上传 + 公开读取执行</li>
         </ul>
 
         <p className="auth-intro__warning">
-          ⚠ main 不合并漏洞代码；VULN-01/04 仅部分达到设计目标。详见 docs/08 与 docs/14。
+          ⚠ 仅限课程内部使用；不要对非本项目目标测试。漏洞细节与验证方法见 docs/08、docs/16。
         </p>
       </section>
 

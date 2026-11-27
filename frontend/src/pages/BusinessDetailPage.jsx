@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { deleteBusinessItem, fetchBusinessItem, fetchCoverBlob } from '../api/business.js';
+import { fetchHealth } from '../api/health.js';
 import { PageHeader } from '../components/PageHeader.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { EmptyState, ErrorState, LoadingState } from '../components/StateViews.jsx';
@@ -29,6 +30,15 @@ export function BusinessDetailPage() {
   const [coverUrl, setCoverUrl] = useState('');
   const [actionError, setActionError] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [vulnMode, setVulnMode] = useState('off');
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchHealth({ signal: controller.signal })
+      .then((envelope) => setVulnMode(envelope.data?.vulnMode ?? 'off'))
+      .catch(() => setVulnMode('off'));
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -184,7 +194,16 @@ export function BusinessDetailPage() {
           </div>
 
           <h3>描述</h3>
-          <p className={item.description ? 'pre-wrap' : 'muted'}>{item.description || '暂无描述'}</p>
+          {item.description ? (
+            vulnMode === 'VULN-02' || vulnMode === 'ALL' ? (
+              // ──【刻意漏洞 VULN-02】ALL / VULN-02 时把描述当作 HTML 渲染 ──
+              <p className="pre-wrap" dangerouslySetInnerHTML={{ __html: item.description }} />
+            ) : (
+              <p className="pre-wrap">{item.description}</p>
+            )
+          ) : (
+            <p className="muted">暂无描述</p>
+          )}
 
           <p className="muted">
             {canEdit

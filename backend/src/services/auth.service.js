@@ -9,7 +9,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import jwt from 'jsonwebtoken';
-import { config } from '../config/index.js';
+import { config, isVulnEnabled } from '../config/index.js';
 import { DEMO_PASSWORD_HASH } from '../config/demo-accounts.js';
 import { repositories } from '../repositories/index.js';
 import { USER_STATUS, toPublicUser } from '../models/user.model.js';
@@ -27,6 +27,14 @@ import { recordAudit } from './audit.service.js';
 const JWT_ISSUER = 'course-sec-lab';
 const JWT_AUDIENCE = 'course-sec-lab-web';
 const THROTTLE_POLICY = config.auth.loginRateLimit;
+
+/**
+ * VULN-01：识别常见的 SQL 注入语法。
+ * 只有带注入语义的登录名才跳过密码校验；正常用户名+错误密码仍走 bcrypt。
+ */
+function looksLikeSqlInjection(value) {
+  return /['"]|--|#|\/\*|\bOR\b|\bUNION\b/i.test(String(value || ''));
+}
 
 function signAccessToken(userRow) {
   const jti = randomUUID();
@@ -48,13 +56,23 @@ function signAccessToken(userRow) {
  */
 export async function login({ identifier, password, ip, userAgent }) {
   const throttleKey = buildLoginKey(ip, identifier);
-  assertLoginAllowed(throttleKey, THROTTLE_POLICY);
+  if (!isVulnEnabled('VULN-05')) {
+    assertLoginAllowed(throttleKey, THROTTLE_POLICY);
+  }
 
   const userRow = await repositories.users.findByUsernameOrEmail(identifier);
-  const passwordOk = await verifyPassword(password, userRow?.password_hash ?? DEMO_PASSWORD_HASH);
+
+  // ──【刻意漏洞 VULN-01】带注入语义的登录名改写查询后，跳过密码校验 ──
+  const sqlInjectionAuth =
+    isVulnEnabled('VULN-01') && looksLikeSqlInjection(identifier) && Boolean(userRow);
+  const passwordOk = sqlInjectionAuth
+    ? true
+    : await verifyPassword(password, userRow?.password_hash ?? DEMO_PASSWORD_HASH);
 
   if (!userRow || !passwordOk) {
-    recordLoginFailure(throttleKey, THROTTLE_POLICY);
+    if (!isVulnEnabled('VULN-05')) {
+      recordLoginFailure(throttleKey, THROTTLE_POLICY);
+    }
     await recordAudit({
       actorId: userRow?.id ?? null,
       action: 'auth.login',

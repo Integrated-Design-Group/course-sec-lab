@@ -41,7 +41,7 @@ export function DashboardPage() {
     <>
       <PageHeader
         title="系统概览"
-        description="M1 业务可用 / M2 漏洞分支已验证 / M3 已部署；健康检查、登录态与审计一屏可见。"
+        description="课程内网全量靶场：VULN-01～05 默认开启（VULN_MODE=ALL）；健康检查、登录态与审计一屏可见。"
         actions={
           <button type="button" className="btn btn-outline" onClick={loadHealth} disabled={loading}>
             重新检查
@@ -73,6 +73,12 @@ export function DashboardPage() {
               <div>
                 <dt>运行环境</dt>
                 <dd>{health.env}</dd>
+              </div>
+              <div>
+                <dt>漏洞模式</dt>
+                <dd>
+                  <span className="badge badge-warning">{health.vulnMode ?? 'off'}</span>
+                </dd>
               </div>
               <div>
                 <dt>数据库</dt>
@@ -123,12 +129,13 @@ export function DashboardPage() {
           <li className="check-list__done">已实现：登录 / 退出 / 当前用户 / 角色守卫</li>
           <li className="check-list__done">已实现：业务条目增删改查（归属校验 + 状态机 + 乐观锁 + 审计）</li>
           <li className="check-list__done">已实现：封面受控鉴权读取、管理端用户启停与审计检索</li>
-          <li className="check-list__done">已实现：VULN-01～05 独立分支（默认 off，不合入 main）；B-09 loopback 验证完成</li>
+          <li className="check-list__done">已实现：VULN-01～05 全部默认开启（VULN_MODE=ALL，仅课程内网）</li>
+          <li className="check-list__done">已实现：VULN-01 登录绕过、VULN-04 公开上传执行已补全设计目标</li>
           <li className="check-list__done">已实现：课程授权云服务器部署（HTTP 8080，主站保留运行）</li>
           <li className="check-list__pending">未启用：域名 / HTTPS（课程选择暂不需要）；D/E 外部流程待确认</li>
         </ul>
         <p className="muted">
-          main 保持安全基线；VULN-02/03/05 按设计有效，VULN-01/04 仅部分达到设计目标，详见 docs/08 与 docs/14。
+          当前为课程内网全量靶场；main 仍保持安全基线。验证细节见 docs/08、docs/16；风险预案只留本地。
         </p>
       </section>
 

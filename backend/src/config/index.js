@@ -187,6 +187,15 @@ const uploadConfig = Object.freeze({
   allowedMime: Object.freeze(uploadAllowedMime),
 });
 
+// 课程内网全量靶场：默认 ALL（5 个漏洞同时开启）；单漏洞模式仍可显式指定。
+const vulnConfig = Object.freeze({
+  mode: readEnum(
+    'VULN_MODE',
+    ['off', 'VULN-01', 'VULN-02', 'VULN-03', 'VULN-04', 'VULN-05', 'ALL'],
+    'ALL',
+  ),
+});
+
 function deepFreeze(object) {
   for (const value of Object.values(object)) {
     if (value && typeof value === 'object' && !Object.isFrozen(value)) deepFreeze(value);
@@ -200,7 +209,13 @@ export const config = deepFreeze({
   db: dbConfig,
   auth: authConfig,
   upload: uploadConfig,
+  vuln: vulnConfig,
 });
+
+/** 当前是否启用某个漏洞；ALL 表示全量开启。 */
+export function isVulnEnabled(vulnId) {
+  return config.vuln.mode === vulnId || config.vuln.mode === 'ALL';
+}
 
 /** 日志中可安全输出的配置摘要（不含任何密钥）。 */
 export function describeConfigForLog() {
@@ -212,5 +227,6 @@ export function describeConfigForLog() {
     db: { driver: config.db.driver, host: config.db.host, port: config.db.port, name: config.db.name },
     uploadDir: config.upload.dir,
     logDir: config.log.dir,
+    vulnMode: config.vuln.mode,
   };
 }

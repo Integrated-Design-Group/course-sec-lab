@@ -12,6 +12,10 @@ import { closePool, pingDatabase } from './db/pool.js';
 
 const app = createApp();
 
+if (config.vuln.mode !== 'off') {
+  logger.warn('⚠️ 靶场漏洞模式已启用，请确认仅用于课程授权测试', { vulnMode: config.vuln.mode });
+}
+
 const server = app.listen(config.app.port, () => {
   logger.info('HTTP 服务已启动', {
     url: `http://127.0.0.1:${config.app.port}${config.app.apiPrefix}`,

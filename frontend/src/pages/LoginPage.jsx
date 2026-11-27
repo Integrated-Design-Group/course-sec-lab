@@ -51,7 +51,7 @@ export function LoginPage() {
     <div className="login-card">
       <header className="login-card__header">
         <h2>登录</h2>
-        <p className="muted">使用课程演示账号登录；仅限课程授权环境，未登录访问受限页面会被重定向到本页。</p>
+        <p className="muted">课程内网全量靶场入口：5 个漏洞默认开启，仅限课程授权环境使用。</p>
       </header>
 
       {error && (

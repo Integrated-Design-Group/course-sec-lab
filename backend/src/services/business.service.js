@@ -10,6 +10,7 @@
  *  - 所有写操作写审计日志（不含密码/token）
  */
 import { repositories } from '../repositories/index.js';
+import { isVulnEnabled } from '../config/index.js';
 import {
   ITEM_STATUS,
   ITEM_STATUS_TRANSITIONS,
@@ -28,9 +29,27 @@ function isAdmin(actor) {
 function assertCanOperate(actor, row) {
   if (!actor) throw new AppError('UNAUTHORIZED');
   if (isAdmin(actor)) return;
+  // ──【刻意漏洞 VULN-03】跳过归属校验；ALL / VULN-03 启用 ──
+  if (isVulnEnabled('VULN-03')) return;
   if (Number(row.owner_id) !== Number(actor.id)) {
     throw new AppError('FORBIDDEN', '只能操作自己发布的条目');
   }
+}
+
+function escapeHtmlForDescription(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeDescription(description) {
+  if (description == null || description === '') return description;
+  // ──【刻意漏洞 VULN-02】ALL / VULN-02 时保留原始 HTML ──
+  if (isVulnEnabled('VULN-02')) return description;
+  return escapeHtmlForDescription(description);
 }
 
 async function assertCoverUsable(coverFileId, actor) {
@@ -92,7 +111,7 @@ export async function createBusinessItem({ input, actor, ip, userAgent }) {
     category: input.category,
     condition_level: input.conditionLevel,
     price: input.price,
-    description: input.description ? input.description : null,
+    description: sanitizeDescription(input.description ? input.description : null),
     status: ITEM_STATUS.DRAFT,
     cover_file_id: input.coverFileId ?? null,
     created_at: now,
@@ -174,7 +193,7 @@ export async function updateBusinessItem({ id, input, actor, ip, userAgent }) {
     changedFields.push('price');
   }
   if (input.description !== undefined) {
-    columns.description = input.description === '' ? null : input.description;
+    columns.description = sanitizeDescription(input.description === '' ? null : input.description);
     changedFields.push('description');
   }
   if (input.status !== undefined) {
