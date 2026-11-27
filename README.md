@@ -221,6 +221,7 @@ course-sec-lab/
 | 冒烟 / 契约测试（内存驱动） | ✅ 6 项 + 11 项通过 |
 | MySQL 迁移 / 种子 | ✅ 本地独立容器 + 云服务器 Compose 实例均复验：`001`+`002`，users=2 / items=11 |
 | 主站公网 | ✅ `http://{{PUBLIC_IP}}:8080`：health 200、登录 200、前端 200 |
+| 前端进度文案 | ✅ 2026-11-27 登录页/主页已同步，并重建 `csl-web` 容器上线 |
 | B-09 五漏洞（服务器 loopback） | ✅ 全部执行；VULN-02/03/05 有效，VULN-01/04 部分有效；漏洞容器已删除 |
 | 备份 / 恢复 | ✅ DB dump + uploads 打包；DB dump 恢复到临时库核对（2/11）后删除 |
 | Docker Compose 编排 | ✅ 云服务器三容器 healthy；镜像本地构建后 `docker load`（服务器 Docker Hub 超时） |
