@@ -9,6 +9,7 @@
 > **本文不会出现任何真实密码、云密钥或公网地址**；示例密码均为占位或课程演示值。
 > **实测说明（2026-11-13）**：路线 A/B/C 的核心命令已在 Windows 11 + Docker Desktop 29.9.3 + Compose v5.7.0 + MySQL 8.4.4 上执行通过，包括容器内迁移/种子/重置、宿主机 `127.0.0.1:3306` 开发模式、Nginx 访问与浏览器登录。若你的环境不同，仍按本文逐步验证。
 > **M1 更新（2026-11-18）**：新增条目 CRUD、封面上传与受控读取、管理后台；本地验证步骤见第 10 节，完整“测试 → PR”流程见 [13 交付流程](./13-m1-delivery-runbook.md)。
+> **2026-11-26 复验**：`001`+`002` 迁移与种子已在独立 MySQL 8.4.4 容器通过（`users=2 business_items=11`）；Compose 全栈与浏览器全量 E2E 仍未在本次复跑。
 
 ## 1. 先选一条路线
 
@@ -346,8 +347,11 @@ npm --prefix backend run db:migrate
 → 目标数据库：lab_user@127.0.0.1:3306/course_sec_lab
 ✔ 数据库已就绪：course_sec_lab
 ✔ 已应用：001_init_schema
-完成：本次应用 1 个迁移，共 1 个迁移文件
+✔ 已应用：002_m1_business_indexes
+完成：本次应用 2 个迁移，共 2 个迁移文件
 ```
+
+> 2026-11-26 已用独立 MySQL 8.4.4 容器复验：`001`+`002` 均应用成功，`db:seed` 输出 `roles=2 users=2 business_items=11`。若输出不同，先按第 12.5 节排查。
 
 ```bash
 npm --prefix backend run db:seed
